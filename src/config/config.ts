@@ -20,16 +20,18 @@ export const config = {
     dir: process.env.LOG_DIR || './logs',
   },
   
-  // arXiv
-  arxiv: {
-    apiUrl: process.env.ARXIV_API_URL || 'http://export.arxiv.org/api/query',
-    maxResults: parseInt(process.env.ARXIV_MAX_RESULTS || '10', 10),
+  // OpenAlex
+  openAlex: {
+    apiUrl: process.env.OPENALEX_API_URL || 'https://api.openalex.org',
+    email: process.env.OPENALEX_EMAIL || '',
+    maxResults: parseInt(process.env.OPENALEX_MAX_RESULTS || '10', 10),
   },
   
   // Paper Fetching
   paper: {
     fetchIntervalHours: parseInt(process.env.FETCH_INTERVAL_HOURS || '24', 10),
-    defaultDomains: (process.env.DEFAULT_DOMAINS || 'cs.AI,cs.LG,cs.CL').split(','),
+    defaultTopics: (process.env.DEFAULT_TOPICS || 'artificial intelligence,machine learning,natural language processing').split(','),
+    minCitationCount: parseInt(process.env.MIN_CITATION_COUNT || '10', 10),
   },
   
   // Environment

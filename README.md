@@ -1,6 +1,6 @@
 # Research Paper Agent 📚🤖
 
-An intelligent Discord bot that automatically fetches, summarizes, and organizes academic papers from arXiv and Google Scholar using GitHub Copilot SDK.
+An intelligent Discord bot that automatically fetches, summarizes, and organizes academic papers from OpenAlex using GitHub Copilot SDK.
 
 ## Features
 
@@ -35,10 +35,45 @@ An intelligent Discord bot that automatically fetches, summarizes, and organizes
 - **Runtime**: Node.js
 - **Bot Framework**: discord.js
 - **AI/ML**: GitHub Copilot SDK
-- **Paper Sources**: arXiv API, Google Scholar
-- **Database**: SQLite (better-sqlite3) / PostgreSQL
-- **Task Scheduling**: node-cron / node-schedule
+- **Paper Source**: OpenAlex API
+- **Database**: SQLite (better-sqlite3)
+- **Task Scheduling**: node-cron
+- **Logging**: Winston
 - **Environment**: Docker (optional)
+
+## Why OpenAlex?
+
+We chose [OpenAlex](https://openalex.org) as our primary paper source because:
+
+✅ **Comprehensive Metadata**
+- Full bibliographic data including citations, authors, venues
+- 250M+ works across all academic fields
+- Updated daily with new publications
+
+✅ **Native Citation Data**
+- Citation counts built-in (no secondary API needed)
+- Citation relationships and reference graphs
+- Highly cited papers filtering out of the box
+
+✅ **Advanced Filtering**
+- Native support for date range queries
+- Filter by publication year, citations, topics, venues
+- Complex queries with boolean operators
+
+✅ **Modern REST API**
+- JSON responses (no XML parsing)
+- Intuitive query syntax
+- Excellent documentation
+
+✅ **Free & Open**
+- No API key required for basic usage
+- 100,000 requests per day (polite pool)
+- Open data licensed under CC0
+
+✅ **Better for Research Discovery**
+- Cross-references multiple data sources
+- Deduplicates papers from different sources
+- Covers all publication types (preprints, journals, conferences)
 
 ## Architecture
 
@@ -54,8 +89,8 @@ An intelligent Discord bot that automatically fetches, summarizes, and organizes
             └──────────┬─────────────────┘
                        │
             ┌──────────▼──────────┐
-            │   Paper Fetcher     │
-            │  (arXiv + Scholar)  │
+            │  OpenAlex Fetcher   │
+            │  (Research Papers)  │
             └──────────┬──────────┘
                        │
             ┌──────────▼──────────┐
@@ -73,38 +108,39 @@ An intelligent Discord bot that automatically fetches, summarizes, and organizes
 
 ```
 copilot-research-agent/
-├── src/
-│   ├── bot/
-│   │   ├── index.ts            # Main bot logic
-│   │   ├── commands.ts         # Command handlers
-│   │   └── events.ts           # Event handlers (reactions, etc.)
-│   ├── fetchers/
-│   │   ├── arxivFetcher.ts     # arXiv API integration
-│   │   └── scholarFetcher.ts   # Google Scholar scraper
-│   ├── summarizer/
-│   │   └── copilotSummarizer.ts # Copilot SDK integration
-│   ├── database/
+├── src/                        # Source code only
+│   ├── bot.ts                  # Main bot entry point
+│   ├── commands/               # Discord command handlers
+│   ├── services/               # Business logic services
+│   │   └── openAlexFetcher.ts  # OpenAlex API integration
+│   ├── models/                 # Data models and types
+│   │   └── types.ts            # TypeScript interfaces
+│   ├── database/               # Database layer
 │   │   ├── models.ts           # Database models
 │   │   └── operations.ts       # CRUD operations
-│   ├── scheduler/
-│   │   └── tasks.ts            # Scheduled tasks
-│   └── utils/
-│       ├── config.ts           # Configuration management
-│       └── logger.ts           # Logging utilities
-├── tests/
-│   ├── fetchers.test.ts
-│   ├── summarizer.test.ts
-│   └── database.test.ts
-├── config/
-│   └── config.yaml             # Configuration file
-├── data/
-│   └── papers.db              # SQLite database (if used)
-├── .env.example               # Environment variables template
+│   ├── config/                 # Configuration
+│   │   └── config.ts           # App configuration
+│   └── utils/                  # Utility functions
+│       └── logger.ts           # Winston logger
+├── tests/                      # Unit tests (Jest)
+│   └── services/
+│       └── openAlexFetcher.test.ts
+├── examples/                   # Demo and test scripts
+│   ├── demo-openalex.ts        # Basic demo
+│   └── demo-advanced.ts        # Advanced filtering demo
+├── docs/                       # Documentation
+│   ├── ARCHITECTURE.md         # Project architecture guide
+│   └── openalex-fetcher.md     # OpenAlex fetcher API docs
+├── data/                       # Runtime data (gitignored)
+│   └── papers.db               # SQLite database
+├── logs/                       # Log files (gitignored)
+├── dist/                       # Compiled JS (gitignored)
+├── .env                        # Environment variables (gitignored)
+├── .env.example                # Environment template
 ├── .gitignore
 ├── package.json
 ├── tsconfig.json
-├── docker-compose.yml         # Docker setup
-├── Dockerfile
+├── jest.config.js
 ├── README.md
 └── TODO.md
 ```

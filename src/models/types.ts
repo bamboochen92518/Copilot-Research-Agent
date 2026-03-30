@@ -4,10 +4,13 @@ export interface Paper {
   authors: string[];
   abstract: string;
   url: string;
-  arxivId?: string;
-  fetchDate: Date;
-  domain: string;
+  doi?: string;
+  openAlexId?: string;
   pdfUrl?: string;
+  citedByCount?: number;
+  publicationYear?: number;
+  topics?: string[];
+  fetchDate: Date;
 }
 
 export interface Recommendation {

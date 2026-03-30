@@ -18,14 +18,15 @@
 
 ## Phase 2: Database Layer 🗄️
 - [ ] Design database schema
-  - [ ] Papers table (id, title, authors, abstract, url, arxiv_id, fetch_date, domain)
+  - [ ] Papers table (id, title, authors, abstract, url, doi, openalex_id, pdf_url, cited_by_count, publication_year, fetch_date, topics)
   - [ ] Recommendations table (paper_id, channel_id, recommended_date)
   - [ ] Favorites table (user_id, paper_id, favorited_date)
-- [ ] Implement database models using better-sqlite3 or TypeORM
+- [ ] Implement database models using better-sqlite3
 - [ ] Create CRUD operations
   - [ ] Add paper
   - [ ] Check if paper already recommended
-  - [ ] Get papers by domain
+  - [ ] Get papers by topics
+  - [ ] Get papers by citation count
   - [ ] Add/remove favorites
   - [ ] Get user favorites
 - [ ] Write database migration scripts
@@ -35,24 +36,41 @@
 
 ---
 
-## Phase 3: Paper Fetchers 📄
-### 3.1 arXiv Fetcher
-- [ ] Research arXiv API documentation
-- [ ] Implement arXiv API client using axios
-- [ ] Create search function by domain/keywords
-- [ ] Parse arXiv XML response (title, authors, abstract, PDF link)
-- [ ] Handle API rate limits and errors
-- [ ] Add unit tests for arXiv fetcher
+## Phase 3: Paper Fetcher 📄
 
-### 3.2 Google Scholar Fetcher
-- [ ] Research Google Scholar scraping methods (puppeteer/cheerio)
-- [ ] Implement Scholar scraper
-- [ ] Parse Scholar results
-- [ ] Handle rate limiting and CAPTCHA issues
-- [ ] Add fallback mechanisms
-- [ ] Add unit tests for Scholar fetcher
+### 3.1 OpenAlex Fetcher
 
-**Estimated Time**: 4-6 hours
+**Why OpenAlex?**
+- ✅ Native citation data built-in
+- ✅ Built-in date range filtering
+- ✅ Modern REST API with JSON responses
+- ✅ Comprehensive coverage (250M+ works across all fields)
+- ✅ Advanced filtering options (citations, venues, topics)
+- ✅ Free and open (100k requests/day, no API key needed)
+
+**Tasks**:
+- [ ] Research OpenAlex API documentation (https://docs.openalex.org)
+- [ ] Implement OpenAlex API client using axios
+- [ ] Create search function with filters:
+  - [ ] Search by keywords/concepts
+  - [ ] Filter by publication year range
+  - [ ] Filter by minimum citation count
+  - [ ] Filter by topics/fields
+  - [ ] Filter by venue (journal/conference)
+- [ ] Parse JSON response (title, authors, abstract, DOI, PDF link, citations)
+- [ ] Handle API rate limits (polite pool: 100k/day, ~1 req/sec)
+- [ ] Implement cursor-based pagination
+- [ ] Add unit tests for OpenAlex fetcher
+- [ ] Create demo scripts
+
+**API Example**:
+```
+GET https://api.openalex.org/works?filter=publication_year:2023-2024,cited_by_count:>50,concepts.id:C41008148
+```
+
+**Status**: 🔄 IN PROGRESS
+
+**Estimated Time**: 3-4 hours
 
 ---
 
@@ -218,12 +236,12 @@
 ### MVP (Minimum Viable Product)
 Focus on these phases first for a working prototype:
 1. ✅ Phase 1: Project Setup
-2. ✅ Phase 2: Database Layer
-3. ✅ Phase 3.1: arXiv Fetcher (skip Scholar for MVP)
-4. ✅ Phase 4: Copilot Summarizer
-5. ✅ Phase 5: Discord Bot - Basic Setup
-6. ✅ Phase 6: Discord Bot - Manual Mode
-7. ✅ Phase 7: Reaction System
+2. Phase 2: Database Layer
+3. Phase 3: OpenAlex Fetcher
+4. Phase 4: Copilot Summarizer
+5. Phase 5: Discord Bot - Basic Setup
+6. Phase 6: Discord Bot - Manual Mode
+7. Phase 7: Reaction System
 
 **MVP Estimated Time**: 20-28 hours
 
@@ -241,18 +259,20 @@ Add remaining features:
 ## Notes & Considerations
 
 ### Technical Challenges
-1. **Google Scholar**: May require proxies or puppeteer due to rate limiting
+1. **OpenAlex Rate Limits**: Stay within polite pool (100k/day, ~1 req/sec)
 2. **Copilot SDK**: TypeScript only - must use @copilot-extensions/preview-sdk
 3. **Discord Rate Limits**: Be careful with message/embed limits
 4. **Error Handling**: Papers might fail to download or summarize
+5. **Pagination**: OpenAlex uses cursor-based pagination for large result sets
 
 ### Recommendations
-- Start with arXiv only (simpler API, no scraping needed)
+- Use OpenAlex for comprehensive paper coverage with built-in citations
 - Use better-sqlite3 for MVP (easier setup than PostgreSQL)
 - Use node-cron (simpler than complex schedulers)
 - Use Discord.js slash commands for better UX
 - Add comprehensive logging with winston from the start
 - Keep summarization prompts configurable
+- Provide email to OpenAlex for polite pool access
 
 ### Dependencies to Add
 ```json
