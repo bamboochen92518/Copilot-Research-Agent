@@ -1,0 +1,272 @@
+# TODO List 📝
+
+## Phase 1: Project Setup ✅
+- [ ] Initialize Git repository
+- [ ] Create project structure (folders and __init__.py files)
+- [ ] Set up virtual environment
+- [ ] Create requirements.txt with dependencies
+- [ ] Create .env.example template
+- [ ] Set up .gitignore
+- [ ] Configure logging system
+
+**Estimated Time**: 1-2 hours
+
+---
+
+## Phase 2: Database Layer 🗄️
+- [ ] Design database schema
+  - [ ] Papers table (id, title, authors, abstract, url, arxiv_id, fetch_date, domain)
+  - [ ] Recommendations table (paper_id, channel_id, recommended_date)
+  - [ ] Favorites table (user_id, paper_id, favorited_date)
+- [ ] Implement database models using SQLAlchemy/SQLite
+- [ ] Create CRUD operations
+  - [ ] Add paper
+  - [ ] Check if paper already recommended
+  - [ ] Get papers by domain
+  - [ ] Add/remove favorites
+  - [ ] Get user favorites
+- [ ] Write database migration scripts
+- [ ] Add database unit tests
+
+**Estimated Time**: 3-4 hours
+
+---
+
+## Phase 3: Paper Fetchers 📄
+### 3.1 arXiv Fetcher
+- [ ] Research arXiv API documentation
+- [ ] Implement arXiv API client
+- [ ] Create search function by domain/keywords
+- [ ] Parse arXiv response (title, authors, abstract, PDF link)
+- [ ] Handle API rate limits and errors
+- [ ] Add unit tests for arXiv fetcher
+
+### 3.2 Google Scholar Fetcher
+- [ ] Research Google Scholar scraping methods (scholarly library)
+- [ ] Implement Scholar scraper
+- [ ] Parse Scholar results
+- [ ] Handle rate limiting and CAPTCHA issues
+- [ ] Add fallback mechanisms
+- [ ] Add unit tests for Scholar fetcher
+
+**Estimated Time**: 4-6 hours
+
+---
+
+## Phase 4: GitHub Copilot Summarizer 🤖
+- [ ] Research GitHub Copilot SDK/API documentation
+- [ ] Set up Copilot API credentials
+- [ ] Design summarization prompt template
+  - [ ] Extract key findings
+  - [ ] Summarize methodology
+  - [ ] Highlight conclusions
+  - [ ] Format for Discord (markdown)
+- [ ] Implement summarization function
+- [ ] Add error handling and retries
+- [ ] Optimize token usage
+- [ ] Add unit tests
+
+**Estimated Time**: 3-4 hours
+
+---
+
+## Phase 5: Discord Bot - Basic Setup 🤖
+- [ ] Create Discord application on Discord Developer Portal
+- [ ] Get bot token
+- [ ] Set up discord.py bot
+- [ ] Implement bot connection and basic event handlers
+- [ ] Design command structure
+- [ ] Set up command error handling
+- [ ] Test basic bot functionality (ping, echo)
+
+**Estimated Time**: 2-3 hours
+
+---
+
+## Phase 6: Discord Bot - Manual Mode 💬
+- [ ] Implement `/fetch` command
+  - [ ] Parse parameters (count, domain/keywords)
+  - [ ] Validate input
+  - [ ] Fetch papers based on request
+- [ ] Implement paper display format (Discord embeds)
+- [ ] Add loading/progress indicators
+- [ ] Implement `/list` command to show recent recommendations
+- [ ] Implement `/favorites` command to show user's saved papers
+- [ ] Add error messages and user feedback
+- [ ] Test all manual commands
+
+**Commands to implement**:
+```
+/fetch <count> <domain> - Fetch N papers from specified domain
+/list - Show recently recommended papers
+/favorites - Show your saved papers
+/help - Show available commands
+```
+
+**Estimated Time**: 4-5 hours
+
+---
+
+## Phase 7: Discord Bot - Reaction System ⭐
+- [ ] Implement reaction event handler
+- [ ] Define favorite emoji (e.g., ⭐ or 📌)
+- [ ] Save paper to favorites on reaction
+- [ ] Remove from favorites when reaction removed
+- [ ] Add confirmation feedback
+- [ ] Handle edge cases (already favorited, paper not found)
+- [ ] Test reaction system
+
+**Estimated Time**: 2-3 hours
+
+---
+
+## Phase 8: Automatic Scheduler ⏰
+- [ ] Research APScheduler or Celery
+- [ ] Implement scheduler setup
+- [ ] Create scheduled task function
+  - [ ] Fetch papers from configured domains
+  - [ ] Summarize papers
+  - [ ] Post to configured channel
+- [ ] Implement configuration for:
+  - [ ] Schedule time (cron expression or interval)
+  - [ ] Target channel ID
+  - [ ] Domains to monitor
+  - [ ] Number of papers per batch
+- [ ] Add enable/disable scheduler commands
+- [ ] Test scheduled tasks
+
+**Commands to add**:
+```
+/schedule enable - Enable automatic daily posts
+/schedule disable - Disable automatic posts
+/schedule status - Check scheduler status
+/schedule config - Show/update scheduler configuration
+```
+
+**Estimated Time**: 3-4 hours
+
+---
+
+## Phase 9: Configuration System ⚙️
+- [ ] Create config.yaml structure
+- [ ] Implement configuration loader
+- [ ] Support for:
+  - [ ] Discord settings (token, channel IDs, emoji)
+  - [ ] Scheduler settings (time, frequency, domains)
+  - [ ] Fetcher settings (API keys, rate limits)
+  - [ ] Summarizer settings (prompt templates, token limits)
+  - [ ] Database settings
+- [ ] Add configuration validation
+- [ ] Create environment variable override system
+- [ ] Document all configuration options
+
+**Estimated Time**: 2-3 hours
+
+---
+
+## Phase 10: Integration & Testing 🧪
+- [ ] Integrate all modules together
+- [ ] End-to-end testing
+  - [ ] Test manual fetch flow
+  - [ ] Test automatic scheduler
+  - [ ] Test favorite system
+  - [ ] Test database operations
+- [ ] Load testing (handle multiple requests)
+- [ ] Error recovery testing
+- [ ] Write integration tests
+- [ ] Fix bugs and edge cases
+
+**Estimated Time**: 4-6 hours
+
+---
+
+## Phase 11: Deployment & Documentation 🚀
+- [ ] Create Dockerfile
+- [ ] Create docker-compose.yml
+- [ ] Set up environment variables
+- [ ] Write deployment instructions
+- [ ] Add usage examples to README
+- [ ] Create user guide
+- [ ] Add contribution guidelines
+- [ ] Set up CI/CD (optional)
+- [ ] Deploy to server/cloud
+
+**Estimated Time**: 3-4 hours
+
+---
+
+## Phase 12: Enhancements (Future) 🌟
+- [ ] Web dashboard for managing favorites
+- [ ] Support for more paper sources (IEEE, ACM, PubMed)
+- [ ] Advanced filtering (date range, citation count)
+- [ ] Paper recommendations based on user preferences
+- [ ] Multi-language support
+- [ ] Export favorites to BibTeX/Zotero
+- [ ] Paper discussion threads
+- [ ] Email notifications
+- [ ] Slack/Teams integration
+
+---
+
+## Development Priority
+
+### MVP (Minimum Viable Product)
+Focus on these phases first for a working prototype:
+1. ✅ Phase 1: Project Setup
+2. ✅ Phase 2: Database Layer
+3. ✅ Phase 3.1: arXiv Fetcher (skip Scholar for MVP)
+4. ✅ Phase 4: Copilot Summarizer
+5. ✅ Phase 5: Discord Bot - Basic Setup
+6. ✅ Phase 6: Discord Bot - Manual Mode
+7. ✅ Phase 7: Reaction System
+
+**MVP Estimated Time**: 20-28 hours
+
+### Full Version
+Add remaining features:
+8. Phase 8: Automatic Scheduler
+9. Phase 9: Configuration System
+10. Phase 10: Integration & Testing
+11. Phase 11: Deployment
+
+**Full Version Estimated Time**: 35-50 hours total
+
+---
+
+## Notes & Considerations
+
+### Technical Challenges
+1. **Google Scholar**: May require proxies or scholarly library due to rate limiting
+2. **Copilot SDK**: Need to check current API availability and pricing
+3. **Discord Rate Limits**: Be careful with message/embed limits
+4. **Error Handling**: Papers might fail to download or summarize
+
+### Recommendations
+- Start with arXiv only (simpler API, no scraping needed)
+- Use SQLite for MVP (easier setup than PostgreSQL)
+- Use APScheduler (simpler than Celery for basic scheduling)
+- Consider using slash commands (/) for better UX
+- Add comprehensive logging from the start
+- Keep summarization prompts configurable
+
+### Dependencies to Add
+```
+discord.py
+arxiv
+scholarly (for Google Scholar)
+sqlalchemy
+apscheduler
+python-dotenv
+pyyaml
+requests
+aiohttp
+```
+
+### Environment Variables Needed
+```
+DISCORD_BOT_TOKEN=your_token_here
+GITHUB_COPILOT_API_KEY=your_key_here
+DATABASE_URL=sqlite:///data/papers.db
+DISCORD_CHANNEL_ID=your_channel_id
+FAVORITE_EMOJI=⭐
+```
