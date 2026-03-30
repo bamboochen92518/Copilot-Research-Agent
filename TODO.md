@@ -2,12 +2,13 @@
 
 ## Phase 1: Project Setup ✅
 - [ ] Initialize Git repository
-- [ ] Create project structure (folders and __init__.py files)
-- [ ] Set up virtual environment
-- [ ] Create requirements.txt with dependencies
+- [ ] Create project structure (folders and files)
+- [ ] Initialize npm project (package.json)
+- [ ] Set up TypeScript (tsconfig.json)
+- [ ] Install dependencies (discord.js, dotenv, etc.)
 - [ ] Create .env.example template
 - [ ] Set up .gitignore
-- [ ] Configure logging system
+- [ ] Configure logging system (winston)
 
 **Estimated Time**: 1-2 hours
 
@@ -18,7 +19,7 @@
   - [ ] Papers table (id, title, authors, abstract, url, arxiv_id, fetch_date, domain)
   - [ ] Recommendations table (paper_id, channel_id, recommended_date)
   - [ ] Favorites table (user_id, paper_id, favorited_date)
-- [ ] Implement database models using SQLAlchemy/SQLite
+- [ ] Implement database models using better-sqlite3 or TypeORM
 - [ ] Create CRUD operations
   - [ ] Add paper
   - [ ] Check if paper already recommended
@@ -35,14 +36,14 @@
 ## Phase 3: Paper Fetchers 📄
 ### 3.1 arXiv Fetcher
 - [ ] Research arXiv API documentation
-- [ ] Implement arXiv API client
+- [ ] Implement arXiv API client using axios
 - [ ] Create search function by domain/keywords
-- [ ] Parse arXiv response (title, authors, abstract, PDF link)
+- [ ] Parse arXiv XML response (title, authors, abstract, PDF link)
 - [ ] Handle API rate limits and errors
 - [ ] Add unit tests for arXiv fetcher
 
 ### 3.2 Google Scholar Fetcher
-- [ ] Research Google Scholar scraping methods (scholarly library)
+- [ ] Research Google Scholar scraping methods (puppeteer/cheerio)
 - [ ] Implement Scholar scraper
 - [ ] Parse Scholar results
 - [ ] Handle rate limiting and CAPTCHA issues
@@ -54,7 +55,8 @@
 ---
 
 ## Phase 4: GitHub Copilot Summarizer 🤖
-- [ ] Research GitHub Copilot SDK/API documentation
+- [ ] Research GitHub Copilot SDK documentation (https://docs.github.com/en/copilot/how-tos/copilot-sdk/sdk-getting-started)
+- [ ] Install @copilot-extensions/preview-sdk
 - [ ] Set up Copilot API credentials
 - [ ] Design summarization prompt template
   - [ ] Extract key findings
@@ -73,7 +75,7 @@
 ## Phase 5: Discord Bot - Basic Setup 🤖
 - [ ] Create Discord application on Discord Developer Portal
 - [ ] Get bot token
-- [ ] Set up discord.py bot
+- [ ] Set up discord.js bot
 - [ ] Implement bot connection and basic event handlers
 - [ ] Design command structure
 - [ ] Set up command error handling
@@ -84,6 +86,7 @@
 ---
 
 ## Phase 6: Discord Bot - Manual Mode 💬
+- [ ] Implement slash commands using Discord.js CommandBuilder
 - [ ] Implement `/fetch` command
   - [ ] Parse parameters (count, domain/keywords)
   - [ ] Validate input
@@ -121,7 +124,7 @@
 ---
 
 ## Phase 8: Automatic Scheduler ⏰
-- [ ] Research APScheduler or Celery
+- [ ] Install node-cron or node-schedule
 - [ ] Implement scheduler setup
 - [ ] Create scheduled task function
   - [ ] Fetch papers from configured domains
@@ -149,14 +152,14 @@
 
 ## Phase 9: Configuration System ⚙️
 - [ ] Create config.yaml structure
-- [ ] Implement configuration loader
+- [ ] Implement configuration loader (js-yaml)
 - [ ] Support for:
   - [ ] Discord settings (token, channel IDs, emoji)
   - [ ] Scheduler settings (time, frequency, domains)
   - [ ] Fetcher settings (API keys, rate limits)
   - [ ] Summarizer settings (prompt templates, token limits)
   - [ ] Database settings
-- [ ] Add configuration validation
+- [ ] Add configuration validation (zod or joi)
 - [ ] Create environment variable override system
 - [ ] Document all configuration options
 
@@ -166,7 +169,7 @@
 
 ## Phase 10: Integration & Testing 🧪
 - [ ] Integrate all modules together
-- [ ] End-to-end testing
+- [ ] End-to-end testing (jest or vitest)
   - [ ] Test manual fetch flow
   - [ ] Test automatic scheduler
   - [ ] Test favorite system
@@ -188,22 +191,22 @@
 - [ ] Add usage examples to README
 - [ ] Create user guide
 - [ ] Add contribution guidelines
-- [ ] Set up CI/CD (optional)
-- [ ] Deploy to server/cloud
+- [ ] Set up CI/CD with GitHub Actions (optional)
+- [ ] Deploy to server/cloud (VPS, Railway, Render, etc.)
 
 **Estimated Time**: 3-4 hours
 
 ---
 
 ## Phase 12: Enhancements (Future) 🌟
-- [ ] Web dashboard for managing favorites
+- [ ] Web dashboard for managing favorites (Next.js/React)
 - [ ] Support for more paper sources (IEEE, ACM, PubMed)
 - [ ] Advanced filtering (date range, citation count)
 - [ ] Paper recommendations based on user preferences
-- [ ] Multi-language support
+- [ ] Multi-language support (i18next)
 - [ ] Export favorites to BibTeX/Zotero
 - [ ] Paper discussion threads
-- [ ] Email notifications
+- [ ] Email notifications (nodemailer)
 - [ ] Slack/Teams integration
 
 ---
@@ -236,37 +239,51 @@ Add remaining features:
 ## Notes & Considerations
 
 ### Technical Challenges
-1. **Google Scholar**: May require proxies or scholarly library due to rate limiting
-2. **Copilot SDK**: Need to check current API availability and pricing
+1. **Google Scholar**: May require proxies or puppeteer due to rate limiting
+2. **Copilot SDK**: TypeScript only - must use @copilot-extensions/preview-sdk
 3. **Discord Rate Limits**: Be careful with message/embed limits
 4. **Error Handling**: Papers might fail to download or summarize
 
 ### Recommendations
 - Start with arXiv only (simpler API, no scraping needed)
-- Use SQLite for MVP (easier setup than PostgreSQL)
-- Use APScheduler (simpler than Celery for basic scheduling)
-- Consider using slash commands (/) for better UX
-- Add comprehensive logging from the start
+- Use better-sqlite3 for MVP (easier setup than PostgreSQL)
+- Use node-cron (simpler than complex schedulers)
+- Use Discord.js slash commands for better UX
+- Add comprehensive logging with winston from the start
 - Keep summarization prompts configurable
 
 ### Dependencies to Add
-```
-discord.py
-arxiv
-scholarly (for Google Scholar)
-sqlalchemy
-apscheduler
-python-dotenv
-pyyaml
-requests
-aiohttp
+```json
+{
+  "dependencies": {
+    "discord.js": "^14.x",
+    "@copilot-extensions/preview-sdk": "latest",
+    "axios": "^1.x",
+    "dotenv": "^16.x",
+    "better-sqlite3": "^9.x",
+    "node-cron": "^3.x",
+    "winston": "^3.x",
+    "js-yaml": "^4.x"
+  },
+  "devDependencies": {
+    "typescript": "^5.x",
+    "@types/node": "^20.x",
+    "ts-node": "^10.x",
+    "nodemon": "^3.x",
+    "jest": "^29.x",
+    "@types/jest": "^29.x"
+  }
+}
 ```
 
 ### Environment Variables Needed
 ```
 DISCORD_BOT_TOKEN=your_token_here
-GITHUB_COPILOT_API_KEY=your_key_here
-DATABASE_URL=sqlite:///data/papers.db
+DISCORD_CLIENT_ID=your_client_id_here
 DISCORD_CHANNEL_ID=your_channel_id
+GITHUB_TOKEN=your_github_token_here
+DATABASE_PATH=./data/papers.db
 FAVORITE_EMOJI=⭐
+COPILOT_MODEL=gpt-4
+LOG_LEVEL=info
 ```

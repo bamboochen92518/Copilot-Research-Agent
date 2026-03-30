@@ -31,12 +31,13 @@ An intelligent Discord bot that automatically fetches, summarizes, and organizes
 
 ## Tech Stack
 
-- **Language**: Python
-- **Bot Framework**: discord.py
+- **Language**: TypeScript
+- **Runtime**: Node.js
+- **Bot Framework**: discord.js
 - **AI/ML**: GitHub Copilot SDK
 - **Paper Sources**: arXiv API, Google Scholar
-- **Database**: SQLite / PostgreSQL
-- **Task Scheduling**: APScheduler / Celery
+- **Database**: SQLite (better-sqlite3) / PostgreSQL
+- **Task Scheduling**: node-cron / node-schedule
 - **Environment**: Docker (optional)
 
 ## Architecture
@@ -74,40 +75,88 @@ An intelligent Discord bot that automatically fetches, summarizes, and organizes
 copilot-research-agent/
 ├── src/
 │   ├── bot/
-│   │   ├── __init__.py
-│   │   ├── discord_bot.py      # Main bot logic
-│   │   ├── commands.py         # Command handlers
-│   │   └── events.py           # Event handlers (reactions, etc.)
+│   │   ├── index.ts            # Main bot logic
+│   │   ├── commands.ts         # Command handlers
+│   │   └── events.ts           # Event handlers (reactions, etc.)
 │   ├── fetchers/
-│   │   ├── __init__.py
-│   │   ├── arxiv_fetcher.py    # arXiv API integration
-│   │   └── scholar_fetcher.py  # Google Scholar scraper
+│   │   ├── arxivFetcher.ts     # arXiv API integration
+│   │   └── scholarFetcher.ts   # Google Scholar scraper
 │   ├── summarizer/
-│   │   ├── __init__.py
-│   │   └── copilot_summarizer.py  # Copilot SDK integration
+│   │   └── copilotSummarizer.ts # Copilot SDK integration
 │   ├── database/
-│   │   ├── __init__.py
-│   │   ├── models.py           # Database models
-│   │   └── operations.py       # CRUD operations
+│   │   ├── models.ts           # Database models
+│   │   └── operations.ts       # CRUD operations
 │   ├── scheduler/
-│   │   ├── __init__.py
-│   │   └── tasks.py            # Scheduled tasks
+│   │   └── tasks.ts            # Scheduled tasks
 │   └── utils/
-│       ├── __init__.py
-│       ├── config.py           # Configuration management
-│       └── logger.py           # Logging utilities
+│       ├── config.ts           # Configuration management
+│       └── logger.ts           # Logging utilities
 ├── tests/
-│   ├── test_fetchers.py
-│   ├── test_summarizer.py
-│   └── test_database.py
+│   ├── fetchers.test.ts
+│   ├── summarizer.test.ts
+│   └── database.test.ts
 ├── config/
 │   └── config.yaml             # Configuration file
 ├── data/
 │   └── papers.db              # SQLite database (if used)
 ├── .env.example               # Environment variables template
 ├── .gitignore
-├── requirements.txt
+├── package.json
+├── tsconfig.json
 ├── docker-compose.yml         # Docker setup
 ├── Dockerfile
 ├── README.md
 └── TODO.md
+```
+
+## Quick Start
+
+### Prerequisites
+- Node.js >= 18.x
+- npm or yarn
+- Discord Bot Token
+- GitHub Token (for Copilot SDK)
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/bamboochen92518/Copilot-Research-Agent.git
+cd Copilot-Research-Agent
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Set up environment variables
+```bash
+cp .env.example .env
+# Edit .env with your tokens
+```
+
+4. Build the project
+```bash
+npm run build
+```
+
+5. Run the bot
+```bash
+npm start
+```
+
+## Development
+
+Run in development mode with hot reload:
+```bash
+npm run dev
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+ISC
