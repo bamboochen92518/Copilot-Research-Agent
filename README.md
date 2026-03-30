@@ -117,6 +117,59 @@ copilot-research-agent/
 - Discord Bot Token
 - GitHub Token (for Copilot SDK)
 
+### Discord Bot Setup
+
+Before installing the application, you need to create and configure a Discord bot:
+
+#### 1. Create a Discord Application
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **"New Application"**
+3. Enter a name for your bot (e.g., "Research Paper Agent")
+4. Click **"Create"**
+
+#### 2. Create a Bot User
+
+1. In your application page, click **"Bot"** in the left sidebar
+2. Click **"Add Bot"** and confirm
+3. Under the bot's username, click **"Reset Token"** to generate a new token
+4. **Copy the token immediately** (you won't be able to see it again!)
+5. Save this token - you'll need it for the `.env` file
+
+⚠️ **Important**: Never share your bot token publicly or commit it to Git!
+
+#### 3. Enable Privileged Gateway Intents
+
+In the Bot settings page, scroll down to **"Privileged Gateway Intents"** and enable:
+
+- ✅ **MESSAGE CONTENT INTENT** (Required - allows bot to read message content)
+- ✅ **SERVER MEMBERS INTENT** (Optional - for member-related features)
+- ⚠️ Click **"Save Changes"** at the bottom
+
+#### 4. Get Your Application/Client ID
+
+1. Click **"General Information"** in the left sidebar
+2. Find and copy your **"Application ID"** (also called Client ID)
+3. Save this ID - you'll need it for the `.env` file
+
+#### 5. Invite Bot to Your Server
+
+1. Click **"OAuth2"** > **"URL Generator"** in the left sidebar
+2. Under **"SCOPES"**, select:
+   - ✅ `bot`
+   - ✅ `applications.commands`
+3. Under **"BOT PERMISSIONS"**, select:
+   - ✅ Read Messages/View Channels
+   - ✅ Send Messages
+   - ✅ Send Messages in Threads
+   - ✅ Embed Links
+   - ✅ Attach Files
+   - ✅ Read Message History
+   - ✅ Add Reactions
+   - ✅ Use Slash Commands
+4. Copy the generated URL at the bottom
+5. Open the URL in your browser and select a server to invite the bot
+
 ### Installation
 
 1. Clone the repository
