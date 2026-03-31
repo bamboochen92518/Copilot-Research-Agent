@@ -111,7 +111,8 @@ copilot-research-agent/
 - Node.js >= 18.x
 - npm or yarn
 - Discord Bot Token
-- GitHub Token (for Copilot SDK)
+- GitHub Copilot subscription (Individual, Business, or Enterprise)
+- GitHub Fine-Grained Personal Access Token (for Copilot SDK)
 
 ### Discord Bot Setup
 
@@ -165,6 +166,38 @@ In the Bot settings page, scroll down to **"Privileged Gateway Intents"** and en
    - ✅ Use Slash Commands
 4. Copy the generated URL at the bottom
 5. Open the URL in your browser and select a server to invite the bot
+
+### GitHub Token Setup (for Copilot SDK)
+
+The Copilot SDK uses a **fine-grained personal access token** to authenticate with your GitHub Copilot subscription. Classic tokens (`ghp_...`) are **not supported** — you must use a fine-grained PAT (`github_pat_...`).
+
+#### 1. Create a Fine-Grained Personal Access Token
+
+1. Go to [github.com](https://github.com) and click your avatar → **Settings**
+2. Scroll to the bottom of the left sidebar and click **Developer settings**
+3. Click **Personal access tokens** → **Fine-grained tokens**
+4. Click **Generate new token**
+5. Fill in the details:
+   - **Token name**: e.g. `copilot-research-agent`
+   - **Expiration**: choose a suitable duration
+   - **Resource owner**: your personal account (or your organization for Enterprise)
+6. No extra repository permissions are needed — the SDK only uses your Copilot subscription
+7. Click **Generate token** and **copy it immediately**
+
+> ⚠️ You only see the token once. Store it somewhere safe before closing the page.
+
+#### 2. Verify Your Copilot Seat
+
+- **Personal / Business plan**: confirm Copilot is active at [github.com/settings/copilot](https://github.com/settings/copilot)
+- **Enterprise plan**: ask your org admin to confirm you have a Copilot seat assigned at `github.com/organizations/YOUR-ORG/settings/copilot`
+
+#### 3. Add the Token to `.env`
+
+```dotenv
+GITHUB_TOKEN=github_pat_your_token_here
+```
+
+The SDK automatically reads this variable — no other configuration is needed.
 
 ### Installation
 

@@ -34,6 +34,14 @@ export const config = {
     minCitationCount: parseInt(process.env.MIN_CITATION_COUNT || '10', 10),
   },
   
+  // GitHub Copilot SDK
+  // The SDK auto-reads GITHUB_TOKEN, but we expose it here for validation.
+  github: {
+    token: process.env.GITHUB_TOKEN || '',
+    // Model to use for summarisation. gpt-4.1 is available on all Copilot plans.
+    model: process.env.COPILOT_MODEL || 'gpt-4.1',
+  },
+
   // Environment
   nodeEnv: process.env.NODE_ENV || 'development',
   isDevelopment: process.env.NODE_ENV !== 'production',
