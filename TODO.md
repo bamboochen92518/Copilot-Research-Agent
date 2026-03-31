@@ -16,23 +16,23 @@
 
 ---
 
-## Phase 2: Database Layer 🗄️
-- [ ] Design database schema
-  - [ ] Papers table (id, title, authors, abstract, url, doi, openalex_id, pdf_url, cited_by_count, publication_year, fetch_date, topics)
-  - [ ] Recommendations table (paper_id, channel_id, recommended_date)
-  - [ ] Favorites table (user_id, paper_id, favorited_date)
-- [ ] Implement database models using better-sqlite3
-- [ ] Create CRUD operations
-  - [ ] Add paper
-  - [ ] Check if paper already recommended
-  - [ ] Get papers by topics
-  - [ ] Get papers by citation count
-  - [ ] Add/remove favorites
-  - [ ] Get user favorites
-- [ ] Write database migration scripts
-- [ ] Add database unit tests
+## Phase 2: Database Layer 🗄️ ✅
+- [x] Design database schema
+  - [x] Papers table (id, title, authors, abstract, url, doi, openalex_id, pdf_url, cited_by_count, publication_year, fetch_date, topics)
+  - [x] Recommendations table (paper_id, channel_id, recommended_date)
+  - [x] Favorites table (user_id, paper_id, favorited_date)
+- [x] Implement database models using better-sqlite3
+- [x] Create CRUD operations
+  - [x] Add paper
+  - [x] Check if paper already recommended
+  - [x] Get papers by topics
+  - [x] Get papers by citation count
+  - [x] Add/remove favorites
+  - [x] Get user favorites
+- [x] Write database migration scripts
+- [x] Add database unit tests
 
-**Estimated Time**: 3-4 hours
+**Status**: ✅ COMPLETED
 
 ---
 
