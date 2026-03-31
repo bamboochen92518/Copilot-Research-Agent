@@ -90,16 +90,16 @@ GET https://api.openalex.org/works?filter=publication_year:2023-2024,cited_by_co
 
 ---
 
-## Phase 5: Discord Bot - Basic Setup 🤖
-- [ ] Create Discord application on Discord Developer Portal
-- [ ] Get bot token
-- [ ] Set up discord.js bot
-- [ ] Implement bot connection and basic event handlers
-- [ ] Design command structure
-- [ ] Set up command error handling
-- [ ] Test basic bot functionality (ping, echo)
+## Phase 5: Discord Bot - Basic Setup 🤖 ✅
+- [x] Create Discord application on Discord Developer Portal
+- [x] Get bot token
+- [x] Set up discord.js bot
+- [x] Implement bot connection and basic event handlers
+- [x] Design command structure
+- [x] Set up command error handling
+- [x] Test basic bot functionality (ping, help)
 
-**Estimated Time**: 2-3 hours
+**Status**: ✅ COMPLETED
 
 ---
 

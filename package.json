@@ -15,7 +15,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
-    "demo:fetcher": "ts-node scripts/demo-fetcher.ts"
+    "demo:fetcher": "ts-node scripts/demo-fetcher.ts",
+    "commands:register": "ts-node scripts/register-commands.ts",
+    "demo:discord": "ts-node scripts/demo-discord.ts"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,7 @@
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Events, ChatInputCommandInteraction } from 'discord.js';
 import dotenv from 'dotenv';
 import logger from './utils/logger';
+import { loadCommands, commandRegistry } from './commands/index';
 
 // Load environment variables
 dotenv.config();
@@ -26,9 +27,36 @@ const client = new Client({
 });
 
 // Bot ready event
-client.once('ready', () => {
+client.once('ready', async () => {
   logger.info(`✅ Bot is ready! Logged in as ${client.user?.tag}`);
   logger.info(`Bot is in ${client.guilds.cache.size} guilds`);
+});
+
+// Slash command handler
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  const command = commandRegistry.get(interaction.commandName);
+  if (!command) {
+    logger.warn(`Unknown command received: ${interaction.commandName}`);
+    await interaction.reply({
+      content: '❌ Unknown command. Use `/help` to see available commands.',
+      ephemeral: true,
+    });
+    return;
+  }
+
+  try {
+    await command.execute(interaction as ChatInputCommandInteraction);
+  } catch (error) {
+    logger.error(`Error executing command "${interaction.commandName}"`, { error });
+    const errorMessage = '❌ An error occurred while executing this command. Please try again.';
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({ content: errorMessage, ephemeral: true });
+    } else {
+      await interaction.reply({ content: errorMessage, ephemeral: true });
+    }
+  }
 });
 
 // Error handling
@@ -46,9 +74,14 @@ process.on('uncaughtException', (error) => {
 });
 
 // Login to Discord
-client.login(process.env.DISCORD_TOKEN).catch((error) => {
-  logger.error('Failed to login to Discord:', error);
-  process.exit(1);
-});
+loadCommands()
+  .then(() => {
+    logger.info(`Loaded ${commandRegistry.size} command(s)`);
+    return client.login(process.env.DISCORD_TOKEN);
+  })
+  .catch((error) => {
+    logger.error('Failed to start bot:', error);
+    process.exit(1);
+  });
 
 export default client;

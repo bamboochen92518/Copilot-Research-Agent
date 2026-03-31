@@ -128,10 +128,13 @@ export class CopilotSummarizer {
       );
     }
 
-    // The SDK automatically picks up GITHUB_TOKEN from the environment.
-    // Passing useLoggedInUser: false ensures we rely only on the token and
-    // never block waiting for an interactive login prompt in a bot context.
-    this.client = new CopilotClient({ useLoggedInUser: false });
+    // `githubToken` passes the token directly to the SDK so it is used
+    // regardless of stored CLI credentials. `useLoggedInUser: false` ensures
+    // the bot never blocks on an interactive login prompt.
+    this.client = new CopilotClient({
+      githubToken: config.github.token || undefined,
+      useLoggedInUser: false,
+    });
     this.model = config.github.model;
   }
 
@@ -153,14 +156,17 @@ export class CopilotSummarizer {
         return formatted;
       } catch (err) {
         lastError = err;
-        logger.warn(`Copilot summarization attempt ${attempt} failed`, { err });
+        const msg = err instanceof Error ? err.message : String(err);
+        logger.warn(`Copilot summarization attempt ${attempt} failed`, { error: msg });
         if (attempt < MAX_RETRIES) {
           await sleep(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1));
         }
       }
     }
 
-    logger.error('All summarization attempts failed', { lastError });
+    logger.error('All summarization attempts failed', {
+      error: lastError instanceof Error ? lastError.message : String(lastError),
+    });
     throw lastError;
   }
 
@@ -182,7 +188,7 @@ export class CopilotSummarizer {
       } catch (err) {
         logger.error('Skipping paper due to summarization error', {
           title: paper.title,
-          err,
+          error: err instanceof Error ? err.message : String(err),
         });
       }
     }
