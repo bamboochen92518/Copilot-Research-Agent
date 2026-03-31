@@ -14,7 +14,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "demo:fetcher": "ts-node scripts/demo-fetcher.ts"
   },
   "repository": {
     "type": "git",

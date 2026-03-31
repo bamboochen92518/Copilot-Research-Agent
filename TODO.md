@@ -36,9 +36,7 @@
 
 ---
 
-## Phase 3: Paper Fetcher 📄
-
-### 3.1 OpenAlex Fetcher
+## Phase 3: Paper Fetcher 📄 (OpenAlex) ✅
 
 **Why OpenAlex?**
 - ✅ Native citation data built-in
@@ -49,26 +47,26 @@
 - ✅ Free and open (100k requests/day, no API key needed)
 
 **Tasks**:
-- [ ] Research OpenAlex API documentation (https://docs.openalex.org)
-- [ ] Implement OpenAlex API client using axios
-- [ ] Create search function with filters:
-  - [ ] Search by keywords/concepts
-  - [ ] Filter by publication year range
-  - [ ] Filter by minimum citation count
-  - [ ] Filter by topics/fields
-  - [ ] Filter by venue (journal/conference)
-- [ ] Parse JSON response (title, authors, abstract, DOI, PDF link, citations)
-- [ ] Handle API rate limits (polite pool: 100k/day, ~1 req/sec)
-- [ ] Implement cursor-based pagination
-- [ ] Add unit tests for OpenAlex fetcher
-- [ ] Create demo scripts
+- [x] Research OpenAlex API documentation (https://docs.openalex.org)
+- [x] Implement OpenAlex API client using axios
+- [x] Create search function with filters:
+  - [x] Search by keywords/concepts
+  - [x] Filter by publication year range
+  - [x] Filter by minimum citation count
+  - [x] Filter by topics/fields
+  - [x] Filter by venue (journal/conference)
+- [x] Parse JSON response (title, authors, abstract, DOI, PDF link, citations)
+- [x] Handle API rate limits (polite pool: 100k/day, ~1 req/sec)
+- [x] Implement cursor-based pagination
+- [x] Add unit tests for OpenAlex fetcher
+- [x] Create demo scripts
 
 **API Example**:
 ```
 GET https://api.openalex.org/works?filter=publication_year:2023-2024,cited_by_count:>50,concepts.id:C41008148
 ```
 
-**Status**: 🔄 IN PROGRESS
+**Status**: ✅ COMPLETED
 
 **Estimated Time**: 3-4 hours
 

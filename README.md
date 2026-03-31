@@ -41,40 +41,6 @@ An intelligent Discord bot that automatically fetches, summarizes, and organizes
 - **Logging**: Winston
 - **Environment**: Docker (optional)
 
-## Why OpenAlex?
-
-We chose [OpenAlex](https://openalex.org) as our primary paper source because:
-
-✅ **Comprehensive Metadata**
-- Full bibliographic data including citations, authors, venues
-- 250M+ works across all academic fields
-- Updated daily with new publications
-
-✅ **Native Citation Data**
-- Citation counts built-in (no secondary API needed)
-- Citation relationships and reference graphs
-- Highly cited papers filtering out of the box
-
-✅ **Advanced Filtering**
-- Native support for date range queries
-- Filter by publication year, citations, topics, venues
-- Complex queries with boolean operators
-
-✅ **Modern REST API**
-- JSON responses (no XML parsing)
-- Intuitive query syntax
-- Excellent documentation
-
-✅ **Free & Open**
-- No API key required for basic usage
-- 100,000 requests per day (polite pool)
-- Open data licensed under CC0
-
-✅ **Better for Research Discovery**
-- Cross-references multiple data sources
-- Deduplicates papers from different sources
-- Covers all publication types (preprints, journals, conferences)
-
 ## Architecture
 
 ```
@@ -125,12 +91,6 @@ copilot-research-agent/
 ├── tests/                      # Unit tests (Jest)
 │   └── services/
 │       └── openAlexFetcher.test.ts
-├── examples/                   # Demo and test scripts
-│   ├── demo-openalex.ts        # Basic demo
-│   └── demo-advanced.ts        # Advanced filtering demo
-├── docs/                       # Documentation
-│   ├── ARCHITECTURE.md         # Project architecture guide
-│   └── openalex-fetcher.md     # OpenAlex fetcher API docs
 ├── data/                       # Runtime data (gitignored)
 │   └── papers.db               # SQLite database
 ├── logs/                       # Log files (gitignored)
