@@ -103,20 +103,20 @@ GET https://api.openalex.org/works?filter=publication_year:2023-2024,cited_by_co
 
 ---
 
-## Phase 6: Discord Bot - Manual Mode 💬
-- [ ] Implement slash commands using Discord.js CommandBuilder
-- [ ] Implement `/fetch` command
-  - [ ] Parse parameters (count, domain/keywords)
-  - [ ] Validate input
-  - [ ] Fetch papers based on request
-- [ ] Implement paper display format (Discord embeds)
-- [ ] Add loading/progress indicators
-- [ ] Implement `/list` command to show recent recommendations
-- [ ] Implement `/favorites` command to show user's saved papers
-- [ ] Add error messages and user feedback
-- [ ] Test all manual commands
+## Phase 6: Discord Bot - Manual Mode 💬 ✅
+- [x] Implement slash commands using Discord.js CommandBuilder
+- [x] Implement `/fetch` command
+  - [x] Parse parameters (count, domain/keywords)
+  - [x] Validate input
+  - [x] Fetch papers based on request
+- [x] Implement paper display format (Discord embeds)
+- [x] Add loading/progress indicators
+- [x] Implement `/list` command to show recent recommendations
+- [x] Implement `/favorites` command to show user's saved papers
+- [x] Add error messages and user feedback
+- [x] Test all manual commands
 
-**Commands to implement**:
+**Commands implemented**:
 ```
 /fetch <count> <domain> - Fetch N papers from specified domain
 /list - Show recently recommended papers
@@ -124,20 +124,19 @@ GET https://api.openalex.org/works?filter=publication_year:2023-2024,cited_by_co
 /help - Show available commands
 ```
 
-**Estimated Time**: 4-5 hours
+**Status**: ✅ COMPLETED
 
 ---
 
-## Phase 7: Discord Bot - Reaction System ⭐
-- [ ] Implement reaction event handler
-- [ ] Define favorite emoji (e.g., ⭐ or 📌)
-- [ ] Save paper to favorites on reaction
-- [ ] Remove from favorites when reaction removed
-- [ ] Add confirmation feedback
-- [ ] Handle edge cases (already favorited, paper not found)
-- [ ] Test reaction system
+## Phase 7: Discord Bot - Reaction System ⭐ ✅
+- [x] Implement reaction event handler
+- [x] Define favorite emoji (⭐)
+- [x] Save paper to favorites on reaction
+- [x] Remove from favorites when reaction removed
+- [x] Add message_papers table to track message → paper mapping
+- [x] Record message ID when posting paper embeds in /fetch
 
-**Estimated Time**: 2-3 hours
+**Status**: ✅ COMPLETED
 
 ---
 

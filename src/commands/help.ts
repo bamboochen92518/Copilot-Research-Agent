@@ -16,15 +16,15 @@ const COMMANDS_INFO = [
   },
   {
     name: '/fetch <count> <domain>',
-    description: 'Fetch *count* papers from *domain* and post AI summaries. *(coming soon)*',
+    description: 'Fetch *count* papers from *domain* and post AI summaries.',
   },
   {
     name: '/list',
-    description: 'Show papers recently recommended in this channel. *(coming soon)*',
+    description: 'Show papers recently recommended in this channel.',
   },
   {
     name: '/favorites',
-    description: 'Show your saved papers. React with ⭐ on any paper to save it. *(coming soon)*',
+    description: 'Show your saved papers. React with ⭐ on any paper to save it.',
   },
   {
     name: '/schedule',

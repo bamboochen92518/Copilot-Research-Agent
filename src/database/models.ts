@@ -40,6 +40,15 @@ CREATE TABLE IF NOT EXISTS favorites (
   UNIQUE(user_id, paper_id)
 );
 
+-- Maps Discord message IDs (from paper embeds) to paper DB IDs.
+-- Used by the reaction handler to know which paper a user starred.
+CREATE TABLE IF NOT EXISTS message_papers (
+  message_id  TEXT    PRIMARY KEY,
+  paper_id    INTEGER NOT NULL REFERENCES papers(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_message_papers_paper ON message_papers(paper_id);
+
 CREATE INDEX IF NOT EXISTS idx_papers_openalex_id   ON papers(openalex_id);
 CREATE INDEX IF NOT EXISTS idx_papers_pub_year      ON papers(publication_year);
 CREATE INDEX IF NOT EXISTS idx_recommendations_paper ON recommendations(paper_id);

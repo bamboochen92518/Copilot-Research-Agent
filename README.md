@@ -218,19 +218,31 @@ cp .env.example .env
 # Edit .env with your tokens
 ```
 
-4. Build the project
+4. Register slash commands with Discord (run once, or when commands change)
+```bash
+npm run commands:register
+```
+
+> 💡 Set `DISCORD_GUILD_ID` in `.env` to register instantly to a specific server. Without it, commands are registered globally and may take up to 1 hour to appear.
+
+5. Build the project
 ```bash
 npm run build
 ```
 
-5. Run the bot
+6. Run the bot
 ```bash
 npm start
 ```
 
 ## Development
 
-Run in development mode with hot reload:
+1. Register slash commands (run once, or whenever you add/change commands):
+```bash
+npm run commands:register
+```
+
+2. Start the bot in development mode:
 ```bash
 npm run dev
 ```

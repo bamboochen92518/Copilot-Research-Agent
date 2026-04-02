@@ -1,7 +1,8 @@
-import { Client, GatewayIntentBits, Events, ChatInputCommandInteraction } from 'discord.js';
+import { Client, GatewayIntentBits, Events, ChatInputCommandInteraction, Partials } from 'discord.js';
 import dotenv from 'dotenv';
 import logger from './utils/logger';
 import { loadCommands, commandRegistry } from './commands/index';
+import { getPaperByMessageId, addFavorite, removeFavorite } from './database/operations';
 
 // Load environment variables
 dotenv.config();
@@ -20,10 +21,14 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
     // MessageContent intent requires approval in Discord Developer Portal
     // Enable it under Bot > Privileged Gateway Intents > MESSAGE CONTENT INTENT
     GatewayIntentBits.MessageContent,
   ],
+  // Partials are required to receive reaction events on messages that were
+  // sent before the bot started (i.e. not in the client's cache).
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
 // Bot ready event
@@ -62,6 +67,41 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // Error handling
 client.on('error', (error) => {
   logger.error('Discord client error:', error);
+});
+
+// ─── ⭐ Reaction: add favorite ────────────────────────────────────────────────
+const FAVORITE_EMOJI = '⭐';
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+  if (user.bot) return;
+  if (reaction.emoji.name !== FAVORITE_EMOJI) return;
+
+  // Fetch full objects if they arrived as partials
+  if (reaction.partial) {
+    try { await reaction.fetch(); } catch { return; }
+  }
+
+  const paper = getPaperByMessageId(reaction.message.id);
+  if (!paper || paper.id === undefined) return;
+
+  addFavorite({ userId: user.id, paperId: paper.id, favoritedDate: new Date() });
+  logger.info(`User ${user.id} favorited paper ${paper.id} ("${paper.title}")`);
+});
+
+// ─── ⭐ Reaction: remove favorite ─────────────────────────────────────────────
+client.on(Events.MessageReactionRemove, async (reaction, user) => {
+  if (user.bot) return;
+  if (reaction.emoji.name !== FAVORITE_EMOJI) return;
+
+  if (reaction.partial) {
+    try { await reaction.fetch(); } catch { return; }
+  }
+
+  const paper = getPaperByMessageId(reaction.message.id);
+  if (!paper || paper.id === undefined) return;
+
+  removeFavorite(user.id, paper.id);
+  logger.info(`User ${user.id} un-favorited paper ${paper.id} ("${paper.title}")`);
 });
 
 process.on('unhandledRejection', (error) => {

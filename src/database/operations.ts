@@ -302,3 +302,41 @@ export function getUserFavorites(
     .all(userId);
   return rows.map(rowToPaper);
 }
+
+// ─── Message → Paper mapping ──────────────────────────────────────────────────
+
+/**
+ * Stores a mapping from a Discord message ID to a paper's DB ID.
+ * Called after posting a paper embed so the reaction handler can look it up.
+ */
+export function addMessagePaper(
+  messageId: string,
+  paperId: number,
+  db?: Database.Database,
+): void {
+  const conn = db ?? getDatabase();
+  conn
+    .prepare<[string, number]>(
+      'INSERT OR IGNORE INTO message_papers (message_id, paper_id) VALUES (?, ?)',
+    )
+    .run(messageId, paperId);
+}
+
+/**
+ * Returns the paper associated with a Discord message ID, or null if not mapped.
+ */
+export function getPaperByMessageId(
+  messageId: string,
+  db?: Database.Database,
+): Paper | null {
+  const conn = db ?? getDatabase();
+  const row = conn
+    .prepare<[string], PaperRow>(`
+      SELECT p.*
+      FROM   papers p
+      JOIN   message_papers mp ON mp.paper_id = p.id
+      WHERE  mp.message_id = ?
+    `)
+    .get(messageId);
+  return row ? rowToPaper(row) : null;
+}

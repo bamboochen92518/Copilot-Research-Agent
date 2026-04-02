@@ -1,6 +1,7 @@
 import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
+  type SlashCommandOptionsOnlyBuilder,
 } from 'discord.js';
 
 /**
@@ -8,7 +9,7 @@ import {
  */
 export interface Command {
   /** The slash-command definition used for registration with Discord. */
-  data: SlashCommandBuilder | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
+  data: SlashCommandBuilder | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'> | SlashCommandOptionsOnlyBuilder;
   /** Called by the interaction handler when this command is invoked. */
   execute(interaction: ChatInputCommandInteraction): Promise<void>;
 }

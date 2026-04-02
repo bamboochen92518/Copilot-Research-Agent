@@ -26,27 +26,31 @@ if (!token || !clientId) {
   process.exit(1);
 }
 
-await loadCommands();
+async function main() {
+  await loadCommands();
 
-const commandData = [...commandRegistry.values()].map((cmd) => cmd.data.toJSON());
+  const commandData = [...commandRegistry.values()].map((cmd) => cmd.data.toJSON());
 
-const rest = new REST({ version: '10' }).setToken(token);
+  const rest = new REST({ version: '10' }).setToken(token!);
 
-try {
-  console.log(`Refreshing ${commandData.length} application command(s)…`);
+  try {
+    console.log(`Refreshing ${commandData.length} application command(s)…`);
 
-  if (guildId) {
-    await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
-      body: commandData,
-    });
-    console.log(`✅  Registered commands to guild ${guildId} (instant).`);
-  } else {
-    await rest.put(Routes.applicationCommands(clientId), {
-      body: commandData,
-    });
-    console.log('✅  Registered commands globally (may take up to 1 hour to propagate).');
+    if (guildId) {
+      await rest.put(Routes.applicationGuildCommands(clientId!, guildId), {
+        body: commandData,
+      });
+      console.log(`✅  Registered commands to guild ${guildId} (instant).`);
+    } else {
+      await rest.put(Routes.applicationCommands(clientId!), {
+        body: commandData,
+      });
+      console.log('✅  Registered commands globally (may take up to 1 hour to propagate).');
+    }
+  } catch (err) {
+    console.error('❌  Failed to register commands:', err);
+    process.exit(1);
   }
-} catch (err) {
-  console.error('❌  Failed to register commands:', err);
-  process.exit(1);
 }
+
+main();

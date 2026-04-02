@@ -9,14 +9,14 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/bot.js",
-    "dev": "ts-node src/bot.ts",
+    "dev": "tsx src/bot.ts",
     "watch": "tsc -w",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
     "demo:fetcher": "ts-node scripts/demo-fetcher.ts",
-    "commands:register": "ts-node scripts/register-commands.ts",
+    "commands:register": "tsx scripts/register-commands.ts",
     "demo:discord": "ts-node scripts/demo-discord.ts"
   },
   "repository": {
@@ -58,6 +58,7 @@
     "nodemon": "^3.1.14",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }
