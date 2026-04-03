@@ -85,12 +85,11 @@ describe('buildSummarizationPrompt', () => {
     expect(prompt).toContain('Topics:');
   });
 
-  it('truncates a very long abstract', () => {
+  it('includes full abstract without truncation', () => {
     const longAbstract = 'x'.repeat(2000);
     const prompt = buildSummarizationPrompt(makePaper({ abstract: longAbstract }));
-    // Should be truncated — won't contain 2000 x's
-    expect(prompt).not.toContain('x'.repeat(2000));
-    expect(prompt).toContain('…');
+    // No truncation — full abstract should appear
+    expect(prompt).toContain(longAbstract);
   });
 
   it('truncates a very long author list', () => {
@@ -253,7 +252,10 @@ describe('CopilotSummarizer', () => {
 
   describe('summarizePapers', () => {
     it('returns summaries for all papers on success', async () => {
-      const papers = [makePaper({ openAlexId: 'W1' }), makePaper({ openAlexId: 'W2' })];
+      const papers = [
+        { paper: makePaper({ openAlexId: 'W1' }) },
+        { paper: makePaper({ openAlexId: 'W2' }) },
+      ];
       const results = await summarizer.summarizePapers(papers);
       expect(results).toHaveLength(2);
       results.forEach((r) => expect(r.summary).toContain('**🔑 Key Findings:**'));
@@ -267,8 +269,8 @@ describe('CopilotSummarizer', () => {
         .mockResolvedValue({ data: { content: MOCK_RAW_SUMMARY } }); // second paper: ok
 
       const papers = [
-        makePaper({ openAlexId: 'W1', title: 'Bad Paper' }),
-        makePaper({ openAlexId: 'W2', title: 'Good Paper' }),
+        { paper: makePaper({ openAlexId: 'W1', title: 'Bad Paper' }) },
+        { paper: makePaper({ openAlexId: 'W2', title: 'Good Paper' }) },
       ];
       const results = await summarizer.summarizePapers(papers);
       expect(results).toHaveLength(1);
@@ -277,12 +279,12 @@ describe('CopilotSummarizer', () => {
 
     it('returns empty array when all papers fail', async () => {
       mockSendAndWait.mockRejectedValue(new Error('all fail'));
-      const results = await summarizer.summarizePapers([makePaper()]);
+      const results = await summarizer.summarizePapers([{ paper: makePaper() }]);
       expect(results).toHaveLength(0);
     });
 
     it('returns empty array for empty input', async () => {
-      const results = await summarizer.summarizePapers([]);
+      const results = await summarizer.summarizePapers([] as never[]);
       expect(results).toHaveLength(0);
     });
   });

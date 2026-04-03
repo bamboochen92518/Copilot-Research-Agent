@@ -5,9 +5,6 @@ import logger from '../utils/logger';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/** Maximum characters of abstract text to include in the prompt. */
-const MAX_ABSTRACT_CHARS = 800;
-
 /** Maximum characters for the author list in the prompt. */
 const MAX_AUTHORS_CHARS = 120;
 
@@ -27,13 +24,17 @@ function truncate(text: string, maxLen: number): string {
 
 /**
  * Builds the prompt sent to GitHub Copilot for a given paper.
- * Kept concise to stay within token limits while covering all key aspects.
+ * When `fullText` is provided (extracted from the PDF), it is used instead of
+ * the abstract for a richer and more accurate summary.
  */
-export function buildSummarizationPrompt(paper: Paper): string {
+export function buildSummarizationPrompt(paper: Paper, fullText?: string | null): string {
   const authors = truncate(paper.authors.join(', '), MAX_AUTHORS_CHARS);
-  const abstract = paper.abstract
-    ? truncate(paper.abstract, MAX_ABSTRACT_CHARS)
-    : '(no abstract available)';
+
+  const hasFullText = !!fullText;
+  const bodyText = hasFullText
+    ? fullText
+    : paper.abstract || '(no abstract available)';
+  const bodyLabel = hasFullText ? 'Full Text (extracted from PDF)' : 'Abstract';
 
   const meta: string[] = [];
   if (paper.publicationYear) meta.push(`Year: ${paper.publicationYear}`);
@@ -67,8 +68,8 @@ Title: ${paper.title}
 Authors: ${authors}
 ${meta.join(' | ')}
 
-Abstract:
-${abstract}`;
+${bodyLabel}:
+${bodyText}`;
 }
 
 /**
@@ -140,19 +141,21 @@ export class CopilotSummarizer {
 
   /**
    * Summarizes a single paper using GitHub Copilot.
+   * Pass `fullText` (extracted from the PDF) for a richer summary; falls back
+   * to the abstract when not provided.
    * Retries up to `MAX_RETRIES` times with exponential backoff on error.
    *
    * @returns Discord-formatted summary string.
    */
-  async summarizePaper(paper: Paper): Promise<string> {
-    const prompt = buildSummarizationPrompt(paper);
+  async summarizePaper(paper: Paper, fullText?: string | null): Promise<string> {
+    const prompt = buildSummarizationPrompt(paper, fullText);
     let lastError: unknown;
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         const rawSummary = await this._callCopilot(prompt);
         const formatted = formatSummaryForDiscord(paper, rawSummary);
-        logger.info('Summarized paper', { title: paper.title });
+        logger.info('Summarized paper', { title: paper.title, usedFullText: !!fullText });
         return formatted;
       } catch (err) {
         lastError = err;
@@ -171,19 +174,20 @@ export class CopilotSummarizer {
   }
 
   /**
-   * Summarizes multiple papers in sequence (to avoid hammering the API).
-   * Papers that fail individually are skipped (error logged); others continue.
+   * Summarizes multiple papers in sequence.
+   * Each entry may carry optional `fullText` (from PDF); falls back to abstract.
+   * Papers that fail individually are skipped; others continue.
    *
    * @returns Array of `{ paper, summary }` for successful summarizations only.
    */
   async summarizePapers(
-    papers: Paper[],
+    papers: Array<{ paper: Paper; fullText?: string | null }>,
   ): Promise<Array<{ paper: Paper; summary: string }>> {
     const results: Array<{ paper: Paper; summary: string }> = [];
 
-    for (const paper of papers) {
+    for (const { paper, fullText } of papers) {
       try {
-        const summary = await this.summarizePaper(paper);
+        const summary = await this.summarizePaper(paper, fullText);
         results.push({ paper, summary });
       } catch (err) {
         logger.error('Skipping paper due to summarization error', {

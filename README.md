@@ -167,6 +167,21 @@ In the Bot settings page, scroll down to **"Privileged Gateway Intents"** and en
 4. Copy the generated URL at the bottom
 5. Open the URL in your browser and select a server to invite the bot
 
+#### 6. Get Your Server (Guild) ID for Instant Command Registration
+
+Slash commands registered **globally** can take up to 1 hour to appear. Registering to a specific server is **instant** and recommended during development.
+
+1. In Discord, go to **User Settings** → **Advanced** → enable **Developer Mode**
+2. Right-click your server icon in the left sidebar
+3. Click **"Copy Server ID"** — this is your Guild ID
+4. Add it to your `.env` file:
+
+```dotenv
+DISCORD_GUILD_ID=your_guild_id_here
+```
+
+With this set, `npm run commands:register` updates slash commands instantly.
+
 ### GitHub Token Setup (for Copilot SDK)
 
 The Copilot SDK uses a **fine-grained personal access token** to authenticate with your GitHub Copilot subscription. Classic tokens (`ghp_...`) are **not supported** — you must use a fine-grained PAT (`github_pat_...`).

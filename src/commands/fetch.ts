@@ -8,6 +8,7 @@ import { OpenAlexFetcher } from '../services/openAlexFetcher';
 import { CopilotSummarizer } from '../services/copilotSummarizer';
 import { addPaper, addRecommendation, addMessagePaper, isPaperRecommended } from '../database/operations';
 import { config } from '../config/config';
+import { fetchPdfText } from '../utils/pdfFetcher';
 import logger from '../utils/logger';
 import type { Paper } from '../models/types';
 
@@ -28,6 +29,14 @@ export function buildPaperEmbed(paper: Paper, summary: string): EmbedBuilder {
 
   if (paper.url) {
     embed.setURL(paper.url);
+  }
+
+  if (paper.pdfUrl) {
+    embed.addFields({
+      name: '📄 Full PDF',
+      value: `[Open PDF](${paper.pdfUrl})`,
+      inline: true,
+    });
   }
 
   return embed;
@@ -66,6 +75,12 @@ const fetchCommand: Command = {
         .setDescription('Only include papers published on or before this year (default: no upper limit)')
         .setMinValue(1900)
         .setMaxValue(2100),
+    )
+    .addIntegerOption((opt) =>
+      opt
+        .setName('min_citations')
+        .setDescription('Only include papers with at least this many citations (e.g. 50)')
+        .setMinValue(0),
     ),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -76,27 +91,35 @@ const fetchCommand: Command = {
       'artificial intelligence';
     const startYear = interaction.options.getInteger('start_year') ?? undefined;
     const endYear = interaction.options.getInteger('end_year') ?? undefined;
+    const minCitations = interaction.options.getInteger('min_citations') ?? undefined;
 
     // Defer reply – fetching + summarizing can take 10–30 s
     await interaction.deferReply();
 
     try {
       // ── Step 1: Fetch papers ──────────────────────────────────────────────
-      // Fetch up to 3× the requested count so we have headroom after deduplication.
+      // Fetch 200 candidates in a single API call (perPage=200) to minimise
+      // round-trips. After filtering seen papers we shuffle so repeated queries
+      // surface different papers instead of always the same BM25-top results.
       const fetcher = new OpenAlexFetcher();
       const channelId = interaction.channelId;
-      const fetchLimit = Math.min(count * 3, 30);
       const candidates = await fetcher.fetchPapers(
-        { keywords: domain, yearFrom: startYear, yearTo: endYear },
-        fetchLimit,
+        { keywords: domain, yearFrom: startYear, yearTo: endYear, minCitations, perPage: 200 },
+        200,
       );
 
-      // Filter out papers already recommended to this channel
-      const papers = candidates
-        .filter((p) => !p.openAlexId || !isPaperRecommended(p.openAlexId, channelId))
-        .slice(0, count);
+      // Filter out papers already recommended to this channel, then shuffle
+      const unseen = candidates.filter(
+        (p) => !p.openAlexId || !isPaperRecommended(p.openAlexId, channelId),
+      );
+      // Fisher-Yates shuffle for uniform random sampling
+      for (let i = unseen.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [unseen[i], unseen[j]] = [unseen[j], unseen[i]];
+      }
+      const papers = unseen.slice(0, count);
 
-      const skipped = candidates.length - papers.length;
+      const skipped = candidates.length - unseen.length;
 
       if (papers.length === 0) {
         const yearClause = startYear
@@ -112,16 +135,30 @@ const fetchCommand: Command = {
       }
 
       const yearLabel = startYear ? ` (${startYear}–${endYear ?? 'present'})` : '';
+      const citationLabel = minCitations ? ` ≥${minCitations} citations` : '';
       const skippedNote = skipped > 0 ? ` (${skipped} already-seen paper(s) skipped)` : '';
       await interaction.editReply(
-        `🔍 Found **${papers.length}** new paper(s) for **"${domain}"**${yearLabel}${skippedNote}. Summarizing with GitHub Copilot…`,
+        `🔍 Found **${papers.length}** new paper(s) for **"${domain}"**${yearLabel}${citationLabel}${skippedNote}. Summarizing with GitHub Copilot…`,
       );
 
-      // ── Step 2: Summarize ─────────────────────────────────────────────────
+      // ── Step 2: Fetch PDF text in parallel (best-effort) ─────────────────
+      const pdfTexts = await Promise.all(
+        papers.map((p) => fetchPdfText(p.pdfUrl)),
+      );
+      const papersWithText = papers.map((paper, i) => ({
+        paper,
+        fullText: pdfTexts[i],
+      }));
+      const pdfCount = pdfTexts.filter(Boolean).length;
+      if (pdfCount > 0) {
+        logger.info(`Downloaded full text for ${pdfCount}/${papers.length} paper(s)`);
+      }
+
+      // ── Step 3: Summarize ─────────────────────────────────────────────────
       const summarizer = new CopilotSummarizer();
       let results: Array<{ paper: Paper; summary: string }> = [];
       try {
-        results = await summarizer.summarizePapers(papers);
+        results = await summarizer.summarizePapers(papersWithText);
       } finally {
         await summarizer.shutdown();
       }
@@ -151,7 +188,7 @@ const fetchCommand: Command = {
 
       // ── Step 4: Send embeds ───────────────────────────────────────────────
       await interaction.editReply(
-        `📚 Here are **${results.length}** paper(s) on **"${domain}"**${yearLabel}:`,
+        `📚 Here are **${results.length}** paper(s) on **"${domain}"**${yearLabel}${citationLabel}:`,
       );
 
       for (const { paper, summary } of results) {

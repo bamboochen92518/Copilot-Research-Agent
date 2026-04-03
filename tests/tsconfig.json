@@ -4,6 +4,7 @@
     "rootDir": "..",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
+    "isolatedModules": true,
     "types": ["jest", "node"]
   },
   "include": ["./**/*", "../src/**/*"]

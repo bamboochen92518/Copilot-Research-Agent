@@ -15,16 +15,27 @@ const COMMANDS_INFO = [
     description: 'Show this help message.',
   },
   {
-    name: '/fetch <count> <domain>',
-    description: 'Fetch *count* papers from *domain* and post AI summaries.',
+    name: '/fetch',
+    description: [
+      'Fetch and summarize academic papers from OpenAlex using GitHub Copilot.',
+      '**Options:**',
+      '`count` — Number of papers (1–10, default 5)',
+      '`domain` — Keywords or research area (e.g. `multilabel classification`)',
+      '`start_year` — Only papers published on or after this year',
+      '`end_year` — Only papers published on or before this year',
+      '`min_citations` — Only papers with at least this many citations',
+      '',
+      'Each paper gets an AI summary (full PDF text when available) and a 📄 PDF link.',
+      'Already-recommended papers in this channel are automatically skipped.',
+    ].join('\n'),
   },
   {
     name: '/list',
-    description: 'Show papers recently recommended in this channel.',
+    description: 'Show the last 10 papers recommended in this channel.',
   },
   {
     name: '/favorites',
-    description: 'Show your saved papers. React with ⭐ on any paper to save it.',
+    description: 'Show your saved papers. React with ⭐ on any paper embed to save it; remove ⭐ to delete.',
   },
   {
     name: '/schedule',

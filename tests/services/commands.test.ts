@@ -276,8 +276,7 @@ describe('/fetch command', () => {
     OpenAlexFetcher.prototype.fetchPapers = jest.fn().mockResolvedValue([fakePaper]);
     CopilotSummarizer.prototype.summarizePapers = jest
       .fn()
-      .mockResolvedValue([{ paper: fakePaper, summary: '**🔑 Key Findings:** ...' }]);
-    CopilotSummarizer.prototype.shutdown = jest.fn().mockResolvedValue(undefined);
+      .mockResolvedValue([{ paper: fakePaper, summary: '**🔑 Key Findings:** ...' }]);    CopilotSummarizer.prototype.shutdown = jest.fn().mockResolvedValue(undefined);
 
     dbOps.addPaper.mockReturnValue({ ...fakePaper, id: 99 });
 
