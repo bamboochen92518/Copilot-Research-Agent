@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import logger from './utils/logger';
 import { loadCommands, commandRegistry } from './commands/index';
 import { getPaperByMessageId, addFavorite, removeFavorite } from './database/operations';
+import { initScheduler } from './services/scheduler';
 
 // Load environment variables
 dotenv.config();
@@ -35,6 +36,7 @@ const client = new Client({
 client.once('ready', async () => {
   logger.info(`✅ Bot is ready! Logged in as ${client.user?.tag}`);
   logger.info(`Bot is in ${client.guilds.cache.size} guilds`);
+  initScheduler(client);
 });
 
 // Slash command handler

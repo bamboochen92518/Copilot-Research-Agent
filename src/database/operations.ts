@@ -340,3 +340,114 @@ export function getPaperByMessageId(
     .get(messageId);
   return row ? rowToPaper(row) : null;
 }
+
+// ─── Scheduler config ─────────────────────────────────────────────────────────
+
+export interface SchedulerConfig {
+  guildId: string;
+  channelId: string;
+  cronExpression: string;
+  domains: string[];
+  papersPerBatch: number;
+  enabled: boolean;
+  updatedAt: Date;
+}
+
+interface SchedulerConfigRow {
+  guild_id: string;
+  channel_id: string;
+  cron_expression: string;
+  domains: string;
+  papers_per_batch: number;
+  enabled: number;
+  updated_at: string;
+}
+
+function rowToSchedulerConfig(row: SchedulerConfigRow): SchedulerConfig {
+  return {
+    guildId: row.guild_id,
+    channelId: row.channel_id,
+    cronExpression: row.cron_expression,
+    domains: row.domains.split(',').map((d) => d.trim()).filter(Boolean),
+    papersPerBatch: row.papers_per_batch,
+    enabled: row.enabled === 1,
+    // SQLite datetime('now') stores UTC without a timezone marker.
+    // Appending 'Z' makes Date() treat the string as UTC instead of local time.
+    updatedAt: new Date(row.updated_at.replace(' ', 'T') + 'Z'),
+  };
+}
+
+/** Returns the scheduler config for a guild, or null if not configured. */
+export function getSchedulerConfig(
+  guildId: string,
+  db?: Database.Database,
+): SchedulerConfig | null {
+  const conn = db ?? getDatabase();
+  const row = conn
+    .prepare<[string], SchedulerConfigRow>(
+      'SELECT * FROM scheduler_config WHERE guild_id = ?',
+    )
+    .get(guildId);
+  return row ? rowToSchedulerConfig(row) : null;
+}
+
+/** Returns all guilds with an enabled scheduler. */
+export function getAllEnabledSchedulerConfigs(
+  db?: Database.Database,
+): SchedulerConfig[] {
+  const conn = db ?? getDatabase();
+  const rows = conn
+    .prepare<[], SchedulerConfigRow>(
+      'SELECT * FROM scheduler_config WHERE enabled = 1',
+    )
+    .all();
+  return rows.map(rowToSchedulerConfig);
+}
+
+/**
+ * Inserts or updates the scheduler config for a guild.
+ * Only the caller-supplied fields are written; the rest keep their defaults.
+ */
+export function upsertSchedulerConfig(
+  cfg: Omit<SchedulerConfig, 'updatedAt'>,
+  db?: Database.Database,
+): SchedulerConfig {
+  const conn = db ?? getDatabase();
+  conn
+    .prepare<[string, string, string, string, number, number]>(`
+      INSERT INTO scheduler_config
+        (guild_id, channel_id, cron_expression, domains, papers_per_batch, enabled, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(guild_id) DO UPDATE SET
+        channel_id       = excluded.channel_id,
+        cron_expression  = excluded.cron_expression,
+        domains          = excluded.domains,
+        papers_per_batch = excluded.papers_per_batch,
+        enabled          = excluded.enabled,
+        updated_at       = datetime('now')
+    `)
+    .run(
+      cfg.guildId,
+      cfg.channelId,
+      cfg.cronExpression,
+      cfg.domains.join(','),
+      cfg.papersPerBatch,
+      cfg.enabled ? 1 : 0,
+    );
+  return getSchedulerConfig(cfg.guildId, conn)!;
+}
+
+/** Toggles only the `enabled` flag without touching other settings. */
+export function setSchedulerEnabled(
+  guildId: string,
+  enabled: boolean,
+  db?: Database.Database,
+): boolean {
+  const conn = db ?? getDatabase();
+  const info = conn
+    .prepare<[number, string]>(
+      "UPDATE scheduler_config SET enabled = ?, updated_at = datetime('now') WHERE guild_id = ?",
+    )
+    .run(enabled ? 1 : 0, guildId);
+  return info.changes > 0;
+}

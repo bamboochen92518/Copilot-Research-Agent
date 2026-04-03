@@ -7,6 +7,7 @@ import help from './help';
 import fetchCommand from './fetch';
 import listCommand from './list';
 import favoritesCommand from './favorites';
+import scheduleCommand from './schedule';
 
 export type { Command };
 
@@ -34,7 +35,7 @@ export function registerCommand(command: Command): void {
  */
 export async function loadCommands(): Promise<void> {
   // Add new command imports above and list them here as phases progress.
-  const commands = [ping, help, fetchCommand, listCommand, favoritesCommand];
+  const commands = [ping, help, fetchCommand, listCommand, favoritesCommand, scheduleCommand];
   for (const command of commands) {
     registerCommand(command);
   }

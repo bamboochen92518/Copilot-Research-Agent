@@ -47,6 +47,17 @@ CREATE TABLE IF NOT EXISTS message_papers (
   paper_id    INTEGER NOT NULL REFERENCES papers(id) ON DELETE CASCADE
 );
 
+-- Per-guild automatic scheduler configuration.
+CREATE TABLE IF NOT EXISTS scheduler_config (
+  guild_id        TEXT    PRIMARY KEY,
+  channel_id      TEXT    NOT NULL,
+  cron_expression TEXT    NOT NULL DEFAULT '0 9 * * *',
+  domains         TEXT    NOT NULL DEFAULT 'artificial intelligence,machine learning,natural language processing',
+  papers_per_batch INTEGER NOT NULL DEFAULT 3,
+  enabled         INTEGER NOT NULL DEFAULT 0,
+  updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_message_papers_paper ON message_papers(paper_id);
 
 CREATE INDEX IF NOT EXISTS idx_papers_openalex_id   ON papers(openalex_id);

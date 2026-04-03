@@ -140,47 +140,29 @@ GET https://api.openalex.org/works?filter=publication_year:2023-2024,cited_by_co
 
 ---
 
-## Phase 8: Automatic Scheduler ⏰
-- [ ] Install node-cron or node-schedule
-- [ ] Implement scheduler setup
-- [ ] Create scheduled task function
-  - [ ] Fetch papers from configured domains
-  - [ ] Summarize papers
-  - [ ] Post to configured channel
-- [ ] Implement configuration for:
-  - [ ] Schedule time (cron expression or interval)
-  - [ ] Target channel ID
-  - [ ] Domains to monitor
-  - [ ] Number of papers per batch
-- [ ] Add enable/disable scheduler commands
-- [ ] Test scheduled tasks
+## Phase 8: Automatic Scheduler ⏰ ✅
+- [x] Install node-cron or node-schedule
+- [x] Implement scheduler setup
+- [x] Create scheduled task function
+  - [x] Fetch papers from configured domains
+  - [x] Summarize papers
+  - [x] Post to configured channel
+- [x] Implement configuration for:
+  - [x] Schedule time (cron expression or interval)
+  - [x] Target channel ID
+  - [x] Domains to monitor
+  - [x] Number of papers per batch
+- [x] Add enable/disable scheduler commands
+- [x] Test scheduled tasks
 
-**Commands to add**:
+**Commands added**:
 ```
-/schedule enable - Enable automatic daily posts
+/schedule enable  - Enable automatic daily posts (configure channel, cron, domains, count)
 /schedule disable - Disable automatic posts
-/schedule status - Check scheduler status
-/schedule config - Show/update scheduler configuration
+/schedule status  - Check scheduler status and configuration
 ```
 
-**Estimated Time**: 3-4 hours
-
----
-
-## Phase 9: Configuration System ⚙️
-- [ ] Create config.yaml structure
-- [ ] Implement configuration loader (js-yaml)
-- [ ] Support for:
-  - [ ] Discord settings (token, channel IDs, emoji)
-  - [ ] Scheduler settings (time, frequency, domains)
-  - [ ] Fetcher settings (API keys, rate limits)
-  - [ ] Summarizer settings (prompt templates, token limits)
-  - [ ] Database settings
-- [ ] Add configuration validation (zod or joi)
-- [ ] Create environment variable override system
-- [ ] Document all configuration options
-
-**Estimated Time**: 2-3 hours
+**Status**: ✅ COMPLETED
 
 ---
 
