@@ -108,9 +108,12 @@ const fetchCommand: Command = {
         200,
       );
 
-      // Filter out papers already recommended to this channel, then shuffle
+      // Filter out papers already recommended to this channel and papers with
+      // no authors (typically conference proceedings headers, editorial notes, etc.)
       const unseen = candidates.filter(
-        (p) => !p.openAlexId || !isPaperRecommended(p.openAlexId, channelId),
+        (p) =>
+          p.authors.length > 0 &&
+          (!p.openAlexId || !isPaperRecommended(p.openAlexId, channelId)),
       );
       // Fisher-Yates shuffle for uniform random sampling
       for (let i = unseen.length - 1; i > 0; i--) {
