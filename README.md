@@ -32,7 +32,7 @@ An intelligent Discord bot that automatically fetches, summarizes, and organizes
 ## Tech Stack
 
 - **Language**: TypeScript
-- **Runtime**: Node.js
+- **Runtime**: Node.js >= 20
 - **Bot Framework**: discord.js
 - **AI/ML**: GitHub Copilot SDK
 - **Paper Source**: OpenAlex API
@@ -107,7 +107,7 @@ copilot-research-agent/
 ## Quick Start
 
 ### Prerequisites
-- Node.js >= 18.x
+- Node.js >= 20.x
 - npm or yarn
 - Discord Bot Token
 - GitHub Copilot subscription (Individual, Business, or Enterprise)
