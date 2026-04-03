@@ -16,6 +16,8 @@ jest.mock('../../src/services/copilotSummarizer');
 jest.mock('../../src/database/operations', () => ({
   addPaper: jest.fn((p: unknown) => ({ ...(p as object), id: 1 })),
   addRecommendation: jest.fn(),
+  addMessagePaper: jest.fn(),
+  isPaperRecommended: jest.fn().mockReturnValue(false),
   getRecommendationsByChannel: jest.fn(),
   getPaperById: jest.fn(),
   getUserFavorites: jest.fn(),
@@ -31,6 +33,9 @@ jest.mock('../../src/config/config', () => ({
     nodeEnv: 'test',
     isDevelopment: false,
   },
+}));
+jest.mock('../../src/utils/pdfFetcher', () => ({
+  fetchPdfText: jest.fn().mockResolvedValue(null),
 }));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -401,5 +406,187 @@ describe('/favorites command', () => {
     // Gold color = 0xFFD700
     expect(replyArg.embeds[0].toJSON().color).toBe(0xffd700);
   });
+
+  it('replies with error message when database throws', async () => {
+    dbOps.getUserFavorites.mockImplementation(() => {
+      throw new Error('DB crashed');
+    });
+
+    const interaction = makeInteraction('favorites');
+    await favoritesMod.default.execute(interaction as never);
+
+    const replyArg = (interaction.reply as jest.Mock).mock.calls[0][0];
+    expect(replyArg.ephemeral).toBe(true);
+    expect(replyArg.content).toMatch(/error occurred/i);
+  });
 });
 
+// ─── buildPaperEmbed (fetch helper) ──────────────────────────────────────────
+
+describe('buildPaperEmbed', () => {
+  it('includes a PDF field when paper has pdfUrl', async () => {
+    const { buildPaperEmbed } = await import('../../src/commands/fetch');
+    const paper = {
+      title: 'Test Paper',
+      authors: ['Alice'],
+      abstract: 'Abstract text.',
+      url: 'https://example.com',
+      pdfUrl: 'https://example.com/paper.pdf',
+      citedByCount: 10,
+      publicationYear: 2024,
+      topics: [],
+      fetchDate: new Date(),
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const embed = buildPaperEmbed(paper as any, 'Summary text');
+    const json = embed.toJSON();
+
+    const pdfField = (json.fields ?? []).find(
+      (f: { name: string }) => f.name === '📄 Full PDF',
+    );
+    expect(pdfField).toBeDefined();
+    expect(pdfField!.value).toContain('https://example.com/paper.pdf');
+  });
+
+  it('omits the PDF field when paper has no pdfUrl', async () => {
+    const { buildPaperEmbed } = await import('../../src/commands/fetch');
+    const paper = {
+      title: 'Test Paper',
+      authors: ['Alice'],
+      abstract: 'Abstract text.',
+      url: 'https://example.com',
+      pdfUrl: undefined,
+      citedByCount: 10,
+      publicationYear: 2024,
+      topics: [],
+      fetchDate: new Date(),
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const embed = buildPaperEmbed(paper as any, 'Summary text');
+    const json = embed.toJSON();
+
+    const pdfField = (json.fields ?? []).find(
+      (f: { name: string }) => f.name === '📄 Full PDF',
+    );
+    expect(pdfField).toBeUndefined();
+  });
+});
+
+// ─── /fetch additional edge cases ────────────────────────────────────────────
+
+describe('/fetch edge cases', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let fetchMod: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let OpenAlexFetcher: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let CopilotSummarizer: any;
+
+  const fakePaper = {
+    title: 'Edge Case Paper',
+    authors: ['Dave'],
+    abstract: 'Abstract.',
+    url: 'https://example.com/edge',
+    citedByCount: 5,
+    publicationYear: 2021,
+    topics: ['AI'],
+    fetchDate: new Date(),
+  };
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    fetchMod = await import('../../src/commands/fetch');
+    OpenAlexFetcher = (await import('../../src/services/openAlexFetcher')).OpenAlexFetcher;
+    CopilotSummarizer = (await import('../../src/services/copilotSummarizer')).CopilotSummarizer;
+  });
+
+  it('editReplies with failure message when summarizer returns empty results', async () => {
+    OpenAlexFetcher.prototype.fetchPapers = jest.fn().mockResolvedValue([fakePaper]);
+    CopilotSummarizer.prototype.summarizePapers = jest.fn().mockResolvedValue([]);
+    CopilotSummarizer.prototype.shutdown = jest.fn().mockResolvedValue(undefined);
+
+    const interaction = makeInteraction('fetch');
+    await fetchMod.default.execute(interaction as never);
+
+    const calls = (interaction.editReply as jest.Mock).mock.calls.flat();
+    expect(calls.some((c: string) => c.includes('Failed to generate summaries'))).toBe(true);
+  });
+
+  it('editReplies with error message when fetchPapers throws', async () => {
+    OpenAlexFetcher.prototype.fetchPapers = jest.fn().mockRejectedValue(new Error('timeout'));
+
+    const interaction = makeInteraction('fetch');
+    // Mark as deferred so the catch branch calls editReply instead of silently returning
+    (interaction as never as { deferred: boolean }).deferred = true;
+    await fetchMod.default.execute(interaction as never);
+
+    const calls = (interaction.editReply as jest.Mock).mock.calls.flat();
+    expect(calls.some((c: string) => c.includes('An error occurred'))).toBe(true);
+  });
+
+  it('includes year range label in reply when start_year is provided and papers are found', async () => {
+    OpenAlexFetcher.prototype.fetchPapers = jest.fn().mockResolvedValue([fakePaper]);
+    CopilotSummarizer.prototype.summarizePapers = jest
+      .fn()
+      .mockResolvedValue([{ paper: fakePaper, summary: '**🔑 Key Findings:** ...' }]);
+    CopilotSummarizer.prototype.shutdown = jest.fn().mockResolvedValue(undefined);
+
+    const interaction = makeInteraction('fetch', {
+      getInteger: jest.fn().mockImplementation((name: string) => {
+        if (name === 'count') return 5;
+        if (name === 'start_year') return 2020;
+        if (name === 'end_year') return 2023;
+        return null;
+      }),
+    });
+    await fetchMod.default.execute(interaction as never);
+
+    const allReplies = [
+      ...(interaction.editReply as jest.Mock).mock.calls.flat(),
+    ];
+    expect(allReplies.some((c: string) => c.includes('2020–2023'))).toBe(true);
+  });
+});
+
+// ─── /list additional edge cases ─────────────────────────────────────────────
+
+describe('/list edge cases', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let listMod: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let dbOps: any;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    listMod = await import('../../src/commands/list');
+    dbOps = await import('../../src/database/operations');
+  });
+
+  it('replies with warning when all recommendation papers are missing from DB', async () => {
+    dbOps.getRecommendationsByChannel.mockReturnValue([
+      { id: 1, paperId: 99, channelId: 'channel-123', recommendedDate: new Date() },
+    ]);
+    // Paper lookup returns null → all map entries become null → fields array empty
+    dbOps.getPaperById.mockReturnValue(null);
+
+    const interaction = makeInteraction('list');
+    await listMod.default.execute(interaction as never);
+
+    const replyArg = (interaction.reply as jest.Mock).mock.calls[0][0];
+    expect(replyArg.ephemeral).toBe(true);
+    expect(replyArg.content).toMatch(/could not be loaded/i);
+  });
+
+  it('replies with error message when database throws', async () => {
+    dbOps.getRecommendationsByChannel.mockImplementation(() => {
+      throw new Error('DB error');
+    });
+
+    const interaction = makeInteraction('list');
+    await listMod.default.execute(interaction as never);
+
+    const replyArg = (interaction.reply as jest.Mock).mock.calls[0][0];
+    expect(replyArg.ephemeral).toBe(true);
+    expect(replyArg.content).toMatch(/error occurred/i);
+  });
+});

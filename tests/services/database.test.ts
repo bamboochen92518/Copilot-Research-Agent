@@ -11,6 +11,8 @@ import {
   addFavorite,
   removeFavorite,
   getUserFavorites,
+  addMessagePaper,
+  getPaperByMessageId,
 } from '../../src/database/operations';
 import { getDatabase, closeDatabase } from '../../src/database/models';
 import { Paper } from '../../src/models/types';
@@ -330,5 +332,42 @@ describe('favorites', () => {
 
   it('removeFavorite returns false when no matching entry exists', () => {
     expect(removeFavorite('user-1', paper1Id, db)).toBe(false);
+  });
+});
+
+// ─── addMessagePaper / getPaperByMessageId ────────────────────────────────────
+
+describe('message_papers', () => {
+  let paperId: number;
+
+  beforeEach(() => {
+    paperId = addPaper(makePaper(), db).id!;
+  });
+
+  it('addMessagePaper stores the message→paper mapping', () => {
+    addMessagePaper('msg-001', paperId, db);
+    const found = getPaperByMessageId('msg-001', db);
+    expect(found).not.toBeNull();
+    expect(found!.id).toBe(paperId);
+  });
+
+  it('getPaperByMessageId returns null for an unknown message id', () => {
+    expect(getPaperByMessageId('no-such-msg', db)).toBeNull();
+  });
+
+  it('addMessagePaper is idempotent — duplicate insert does not throw', () => {
+    addMessagePaper('msg-002', paperId, db);
+    expect(() => addMessagePaper('msg-002', paperId, db)).not.toThrow();
+    const found = getPaperByMessageId('msg-002', db);
+    expect(found!.id).toBe(paperId);
+  });
+
+  it('returns the correct paper even when multiple mappings exist', () => {
+    const paperId2 = addPaper(makePaper({ openAlexId: 'W2', title: 'Paper 2' }), db).id!;
+    addMessagePaper('msg-A', paperId, db);
+    addMessagePaper('msg-B', paperId2, db);
+
+    expect(getPaperByMessageId('msg-A', db)!.id).toBe(paperId);
+    expect(getPaperByMessageId('msg-B', db)!.id).toBe(paperId2);
   });
 });
