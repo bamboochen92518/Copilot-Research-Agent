@@ -39,7 +39,6 @@ An intelligent Discord bot that automatically fetches, summarizes, and organizes
 - **Database**: SQLite (better-sqlite3)
 - **Task Scheduling**: node-cron
 - **Logging**: Winston
-- **Environment**: Docker (optional)
 
 ## Architecture
 
@@ -216,55 +215,176 @@ The SDK automatically reads this variable — no other configuration is needed.
 
 ### Installation
 
-1. Clone the repository
 ```bash
 git clone https://github.com/bamboochen92518/Copilot-Research-Agent.git
 cd Copilot-Research-Agent
-```
-
-2. Install dependencies
-```bash
 npm install
+cp .env.example .env        # then fill in your tokens
+npm run commands:register   # register slash commands (run once, or when commands change)
 ```
 
-3. Set up environment variables
-```bash
-cp .env.example .env
-# Edit .env with your tokens
-```
+> 💡 Set `DISCORD_GUILD_ID` in `.env` to register slash commands instantly to a specific server. Without it, global registration can take up to 1 hour.
 
-4. Register slash commands with Discord (run once, or when commands change)
-```bash
-npm run commands:register
-```
-
-> 💡 Set `DISCORD_GUILD_ID` in `.env` to register instantly to a specific server. Without it, commands are registered globally and may take up to 1 hour to appear.
-
-5. Build the project
-```bash
-npm run build
-```
-
-6. Run the bot
-```bash
-npm start
-```
-
-## Development
-
-1. Register slash commands (run once, or whenever you add/change commands):
-```bash
-npm run commands:register
-```
-
-2. Start the bot in development mode:
+**Development** (hot-reload, no build step):
 ```bash
 npm run dev
 ```
 
-## Contributing
+**Production** (compile first, then run):
+```bash
+npm run build
+npm start
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+**Tests**:
+```bash
+npm test
+npm run test:coverage
+```
+
+---
+
+## Usage Examples
+
+### `/fetch` — Fetch papers on demand
+
+```
+/fetch
+```
+Fetches 5 papers from the default topic (AI).
+
+```
+/fetch count:3 domain:quantum computing
+```
+Fetches 3 papers about quantum computing.
+
+```
+/fetch count:5 domain:machine learning start_year:2022 min_citations:100
+```
+Fetches 5 machine-learning papers published from 2022 onward with at least 100 citations.
+
+### `/list` — Show recent recommendations
+
+```
+/list
+```
+Displays the most recently recommended papers for the current channel.
+
+### `/favorites` — View saved papers
+
+```
+/favorites
+```
+Shows all papers you have saved by reacting with ⭐ in this channel.
+
+### `/schedule` — Manage automatic posting
+
+```
+/schedule enable channel:#research-papers
+```
+Enables daily posting at 09:00 server time to `#research-papers`.
+
+```
+/schedule enable channel:#research-papers cron:0 18 * * 1-5 domains:AI, NLP count:3
+```
+Posts 3 AI/NLP papers at 18:00 every weekday.
+
+```
+/schedule status
+```
+Shows the current schedule configuration and whether it is active.
+
+```
+/schedule disable
+```
+Stops automatic posting for this server.
+
+### `/help` — List all commands
+
+```
+/help
+```
+
+### Starring papers (⭐ Favorites)
+
+After the bot posts a paper embed, react with ⭐ to save it to your favorites.  
+React again (remove the star) to unsave it.
+
+---
+
+## User Guide
+
+### How the bot works
+
+1. **On demand**: Use `/fetch` whenever you want fresh papers. The bot calls the [OpenAlex API](https://openalex.org), picks papers you haven't seen before in this channel, downloads PDF text where available, and asks GitHub Copilot to generate a structured summary.
+
+2. **Automatically**: Use `/schedule enable` to post papers on a recurring schedule. Each guild stores its own schedule in the local SQLite database.
+
+3. **Saving papers**: React with ⭐ to any paper embed. The bot records the paper in your personal favorites list. Use `/favorites` to review them later.
+
+### Tips
+
+- **Broad searches return more variety.** Try `domain:biology`, `domain:climate`, or just `/fetch` to browse random AI papers.
+- **Use `start_year` + `min_citations` for high-quality results.** Example: `start_year:2020 min_citations:50`.
+- **The bot skips duplicates.** Papers already recommended in a channel won't appear again.
+- **Scheduler runs on server time.** The cron expression uses the timezone of the host machine running the bot. Adjust the cron string accordingly if you want a specific local time.
+- **Multiple guilds are supported.** Each Discord server has its own schedule and recommendation history.
+
+### Environment variable reference
+
+| Variable | Required | Description |
+|---|---|---|
+| `DISCORD_BOT_TOKEN` | ✅ | Bot token from the Discord Developer Portal |
+| `DISCORD_CLIENT_ID` | ✅ | Application / Client ID from the portal |
+| `DISCORD_GUILD_ID` | Optional | Guild ID for instant command registration during dev |
+| `GITHUB_TOKEN` | ✅ | Fine-grained GitHub PAT with Copilot access |
+| `DATABASE_PATH` | Optional | Path to the SQLite file (default: `./data/papers.db`) |
+| `FAVORITE_EMOJI` | Optional | Emoji used to star papers (default: `⭐`) |
+| `COPILOT_MODEL` | Optional | Copilot model name (default: `gpt-4o`) |
+| `LOG_LEVEL` | Optional | Winston log level: `error`, `warn`, `info`, `debug` (default: `info`) |
+
+---
+
+## Deployment (VPS with PM2)
+
+To run the bot persistently on a Linux server (e.g. Ubuntu 22.04):
+
+**1. Install Node.js 20 on the server:**
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+**2. Clone, install, and build** (same as [Installation](#installation) above):
+```bash
+git clone https://github.com/bamboochen92518/Copilot-Research-Agent.git
+cd Copilot-Research-Agent
+npm install
+cp .env.example .env && nano .env
+npm run commands:register
+npm run build
+```
+
+**3. Run with PM2:**
+```bash
+sudo npm install -g pm2
+pm2 start dist/bot.js --name copilot-research-agent
+pm2 save && pm2 startup   # persist across reboots
+```
+
+Useful PM2 commands:
+```bash
+pm2 status
+pm2 logs copilot-research-agent
+pm2 restart copilot-research-agent
+```
+
+**Updating:**
+```bash
+git pull && npm install && npm run build && pm2 restart copilot-research-agent
+```
+
+---
 
 ## License
 

@@ -13,6 +13,10 @@ import {
   getUserFavorites,
   addMessagePaper,
   getPaperByMessageId,
+  getSchedulerConfig,
+  getAllEnabledSchedulerConfigs,
+  upsertSchedulerConfig,
+  setSchedulerEnabled,
 } from '../../src/database/operations';
 import { getDatabase, closeDatabase } from '../../src/database/models';
 import { Paper } from '../../src/models/types';
@@ -369,5 +373,101 @@ describe('message_papers', () => {
 
     expect(getPaperByMessageId('msg-A', db)!.id).toBe(paperId);
     expect(getPaperByMessageId('msg-B', db)!.id).toBe(paperId2);
+  });
+});
+
+// ─── scheduler_config ─────────────────────────────────────────────────────────
+
+const makeSchedulerCfg = (overrides = {}) => ({
+  guildId: 'guild-1',
+  channelId: 'ch-100',
+  cronExpression: '0 9 * * *',
+  domains: ['AI', 'ML'],
+  papersPerBatch: 3,
+  enabled: true,
+  ...overrides,
+});
+
+describe('getSchedulerConfig', () => {
+  it('returns null when no config exists for the guild', () => {
+    expect(getSchedulerConfig('unknown-guild', db)).toBeNull();
+  });
+
+  it('returns the config after it is inserted', () => {
+    upsertSchedulerConfig(makeSchedulerCfg(), db);
+    const cfg = getSchedulerConfig('guild-1', db);
+    expect(cfg).not.toBeNull();
+    expect(cfg!.guildId).toBe('guild-1');
+    expect(cfg!.channelId).toBe('ch-100');
+    expect(cfg!.cronExpression).toBe('0 9 * * *');
+    expect(cfg!.domains).toEqual(['AI', 'ML']);
+    expect(cfg!.papersPerBatch).toBe(3);
+    expect(cfg!.enabled).toBe(true);
+  });
+
+  it('parses updatedAt as a valid UTC Date', () => {
+    upsertSchedulerConfig(makeSchedulerCfg(), db);
+    const cfg = getSchedulerConfig('guild-1', db)!;
+    expect(cfg.updatedAt).toBeInstanceOf(Date);
+    expect(isNaN(cfg.updatedAt.getTime())).toBe(false);
+  });
+});
+
+describe('upsertSchedulerConfig', () => {
+  it('inserts a new config and returns it', () => {
+    const cfg = upsertSchedulerConfig(makeSchedulerCfg(), db);
+    expect(cfg.guildId).toBe('guild-1');
+    expect(cfg.domains).toEqual(['AI', 'ML']);
+  });
+
+  it('updates an existing config when called again for the same guild', () => {
+    upsertSchedulerConfig(makeSchedulerCfg(), db);
+    const updated = upsertSchedulerConfig(
+      makeSchedulerCfg({ channelId: 'ch-999', papersPerBatch: 5, domains: ['NLP'] }),
+      db,
+    );
+    expect(updated.channelId).toBe('ch-999');
+    expect(updated.papersPerBatch).toBe(5);
+    expect(updated.domains).toEqual(['NLP']);
+  });
+
+  it('stores enabled=false correctly', () => {
+    const cfg = upsertSchedulerConfig(makeSchedulerCfg({ enabled: false }), db);
+    expect(cfg.enabled).toBe(false);
+  });
+});
+
+describe('setSchedulerEnabled', () => {
+  it('returns false when guild has no config', () => {
+    expect(setSchedulerEnabled('no-guild', true, db)).toBe(false);
+  });
+
+  it('toggles enabled to false', () => {
+    upsertSchedulerConfig(makeSchedulerCfg({ enabled: true }), db);
+    const changed = setSchedulerEnabled('guild-1', false, db);
+    expect(changed).toBe(true);
+    expect(getSchedulerConfig('guild-1', db)!.enabled).toBe(false);
+  });
+
+  it('toggles enabled to true', () => {
+    upsertSchedulerConfig(makeSchedulerCfg({ enabled: false }), db);
+    setSchedulerEnabled('guild-1', true, db);
+    expect(getSchedulerConfig('guild-1', db)!.enabled).toBe(true);
+  });
+});
+
+describe('getAllEnabledSchedulerConfigs', () => {
+  it('returns empty array when no configs exist', () => {
+    expect(getAllEnabledSchedulerConfigs(db)).toHaveLength(0);
+  });
+
+  it('returns only enabled configs', () => {
+    upsertSchedulerConfig(makeSchedulerCfg({ guildId: 'g1', enabled: true }), db);
+    upsertSchedulerConfig(makeSchedulerCfg({ guildId: 'g2', enabled: false }), db);
+    upsertSchedulerConfig(makeSchedulerCfg({ guildId: 'g3', enabled: true }), db);
+
+    const results = getAllEnabledSchedulerConfigs(db);
+    expect(results).toHaveLength(2);
+    expect(results.map((r) => r.guildId)).toEqual(expect.arrayContaining(['g1', 'g3']));
   });
 });
